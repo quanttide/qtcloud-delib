@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>议事管理工具</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Noto Sans SC", sans-serif; background: #f5f5f5; padding: 40px; color: #333; }
+.container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 32px; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+.subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
+.tab { padding: 8px 20px; cursor: pointer; border: none; background: none; font-size: 14px; color: #888; border-bottom: 2px solid transparent; }
+.tab.active { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 500; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.section { margin-bottom: 20px; }
+.section h2 { font-size: 15px; color: #1a1a1a; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+.form-group { margin-bottom: 8px; }
+.form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 2px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+.form-group textarea { min-height: 50px; resize: vertical; }
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.form-row .form-group { flex: 1; min-width: 140px; }
+.btn { padding: 7px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; }
+.btn:hover { background: #1557b0; }
+.btn-sm { padding: 3px 10px; font-size: 11px; }
+.btn-secondary { background: #e8e8e8; color: #333; }
+.btn-secondary:hover { background: #d0d0d0; }
+.btn-danger { background: #e53935; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #fafafa; font-weight: 500; color: #555; font-size: 11px; }
+.tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+.tag-blue { background: #e3f2fd; color: #1565c0; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.tag-red { background: #fce4ec; color: #c62828; }
+.tag-yellow { background: #fff8e1; color: #f57f17; }
+.result-card { background: #f8f9fa; border-radius: 6px; padding: 14px; }
+.result-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+.result-row.total { font-weight: 700; border-top: 2px solid #ddd; padding-top: 6px; margin-top: 3px; }
+.empty-state { padding: 24px; text-align: center; color: #aaa; font-size: 12px; }
+.card { background: #f9f9f9; border-radius: 4px; padding: 10px; margin-bottom: 6px; }
+.score-group { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+.score-group label { flex: 1; font-size: 12px; }
+.score-group input[type="range"] { flex: 2; }
+.score-group .score-val { width: 24px; text-align: center; font-size: 13px; font-weight: 500; }
+.vote-bar { display: flex; gap: 6px; margin: 6px 0; }
+.vote-bar > span { padding: 3px 14px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+.vote-yea { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.vote-nay { background: #fce4ec; color: #c62828; border: 1px solid #ffcdd2; }
+.vote-abstain { background: #f5f5f5; color: #888; border: 1px solid #e0e0e0; }
+.vote-bar > span.selected { font-weight: 700; box-shadow: 0 0 0 2px #1a73e8; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>议事管理工具</h1>
+  <p class="subtitle">下议院周会全流程 + 三段式审计。提案 → 审议 → 表决 → 落实 → 审计。</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('proposal')">提案</button>
+    <button class="tab" onclick="switchTab('agenda')">议程与表决</button>
+    <button class="tab" onclick="switchTab('audit')">审计</button>
+    <button class="tab" onclick="switchTab('secretary')">轮值书记</button>
+  </div>
+
+  <div id="tab-proposal" class="tab-content active">
+    <div class="section">
+      <h2>提交提案</h2>
+      <div class="form-row">
+        <div class="form-group"><label>提案人</label><input type="text" id="propAuthor"></div>
+        <div class="form-group"><label>委员会</label>
+          <select id="propCommittee">
+            <option value="书记处">书记处</option>
+            <option value="执行委员会">执行委员会</option>
+            <option value="技术委员会">技术委员会</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>提案标题</label><input type="text" id="propTitle"></div>
+      <div class="form-group"><label>提案内容</label><textarea id="propContent"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>优先级</label>
+          <select id="propPriority"><option value="高">高</option><option value="中" selected>中</option><option value="低">低</option></select>
+        </div>
+        <div class="form-group"><label>决策方式</label>
+          <select id="propDecision"><option value="表决">表决</option><option value="讨论">讨论</option><option value="通报">通报</option></select>
+        </div>
+      </div>
+      <button class="btn" onclick="submitProposal()">提交</button>
+    </div>
+    <div class="section">
+      <h2>提案列表</h2>
+      <div id="proposalList"><div class="empty-state">暂无提案。</div></div>
+    </div>
+  </div>
+
+  <div id="tab-agenda" class="tab-content">
+    <div class="section">
+      <h2>本周议程</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">已通过审计的提案进入议程。逐项审议、表决，结束后生成决议跟踪。</p>
+      <div id="agendaList"><div class="empty-state">暂无议程。</div></div>
+    </div>
+  </div>
+
+  <div id="tab-audit" class="tab-content">
+    <div class="section">
+      <h2>会前审计</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">审计议题的会前准备是否合格。未通过不得进入审议。</p>
+      <div id="preAuditList"><div class="empty-state">暂无待审计的提案。</div></div>
+    </div>
+    <div class="section">
+      <h2>会中评分</h2>
+      <div id="scoringArea"><div class="empty-state">已通过的议题在此评分。</div></div>
+    </div>
+    <div class="section">
+      <h2>审计报告</h2>
+      <div id="reportArea"><div class="empty-state">评分完成后生成审计报告。</div></div>
+      <div style="margin-top:8px;text-align:center;"><button class="btn" onclick="generateReport()">生成审计报告</button></div>
+    </div>
+  </div>
+
+  <div id="tab-secretary" class="tab-content">
+    <div class="section">
+      <h2>轮值书记管理</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">部门秘书 → 秘书处 → 秘书长。按周轮值，培养管理人才。</p>
+      <div class="form-row">
+        <div class="form-group"><label>姓名</label><input type="text" id="secName"></div>
+        <div class="form-group"><label>层级</label>
+          <select id="secLevel"><option value="部门秘书">部门秘书</option><option value="秘书处">秘书处</option><option value="秘书长">秘书长</option></select>
+        </div>
+        <div class="form-group"><label>轮值周期（周）</label><input type="number" id="secCycle" value="4" min="1"></div>
+      </div>
+      <button class="btn" onclick="addSecretary()">添加</button>
+      <div style="margin-top:12px;">
+        <h2>成员</h2>
+        <div id="secMemberList"><div class="empty-state">暂无成员。</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h2>排班</h2>
+        <div id="secSchedule"><div class="empty-state">添加成员后自动排班。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  proposals: [],
+  scores: {},
+  secretaries: [],
+  schedules: [],
+  secId: 1
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'agenda') renderAgenda();
+  if (tab === 'audit') { renderPreAudit(); renderScoring(); }
+  if (tab === 'secretary') renderSecretaries();
+}
+
+// -- 提案 --
+function submitProposal() {
+  const title = document.getElementById('propTitle').value.trim();
+  if (!title) { alert('请输入提案标题。'); return; }
+  state.proposals.push({
+    id: Date.now(),
+    author: document.getElementById('propAuthor').value || '未填',
+    committee: document.getElementById('propCommittee').value,
+    title, content: document.getElementById('propContent').value || '未填',
+    priority: document.getElementById('propPriority').value,
+    decisionType: document.getElementById('propDecision').value,
+    auditStatus: '待审计',
+    auditNote: '',
+    vote: { yea: 0, nay: 0, abstain: 0, myVote: null },
+    result: '', feedback: ''
+  });
+  document.getElementById('propTitle').value = ''; document.getElementById('propContent').value = '';
+  renderProposals(); renderPreAudit();
+}
+
+function renderProposals() {
+  const el = document.getElementById('proposalList');
+  if (!state.proposals.length) { el.innerHTML = '<div class="empty-state">暂无提案。</div>'; return; }
+  el.innerHTML = `<table><tr><th>标题</th><th>提案人</th><th>委员会</th><th>优先级</th><th>方式</th><th>审计</th><th>结果</th></tr>
+    ${state.proposals.map(p => `<tr>
+      <td>${p.title}</td><td>${p.author}</td><td>${p.committee}</td>
+      <td><span class="tag ${p.priority === '高' ? 'tag-red' : p.priority === '中' ? 'tag-yellow' : ''}">${p.priority}</span></td>
+      <td>${p.decisionType}</td>
+      <td><span class="tag ${p.auditStatus === '通过' ? 'tag-green' : p.auditStatus === '退回' ? 'tag-red' : 'tag-yellow'}">${p.auditStatus}</span></td>
+      <td>${p.result ? `<span class="tag ${p.result === '通过' ? 'tag-green' : p.result === '未通过' ? 'tag-red' : ''}">${p.result}</span>` : '-'}</td>
+    </tr>`).join('')}</table>`;
+}
+
+// -- 议程与表决 --
+function renderAgenda() {
+  const el = document.getElementById('agendaList');
+  const items = state.proposals.filter(p => p.auditStatus === '通过' && !p.result);
+  if (!items.length) { el.innerHTML = '<div class="empty-state">暂无议程。</div>'; return; }
+  el.innerHTML = items.map(p => `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <strong>${p.title}</strong> <span class="tag ${p.priority === '高' ? 'tag-red' : 'tag-yellow'}">${p.priority}</span>
+    </div>
+    <p style="font-size:11px;color:#555;margin-bottom:4px;">${p.content}</p>
+    <p style="font-size:10px;color:#888;margin-bottom:4px;">提案人：${p.author}（${p.committee}）| 决策：${p.decisionType}</p>
+    ${p.decisionType === '表决' ? `
+      <div class="vote-bar">
+        <span class="vote-yea ${p.vote.myVote === 'yea' ? 'selected' : ''}" onclick="vote(${p.id},'yea')">赞成 (${p.vote.yea})</span>
+        <span class="vote-nay ${p.vote.myVote === 'nay' ? 'selected' : ''}" onclick="vote(${p.id},'nay')">反对 (${p.vote.nay})</span>
+        <span class="vote-abstain ${p.vote.myVote === 'abstain' ? 'selected' : ''}" onclick="vote(${p.id},'abstain')">弃权 (${p.vote.abstain})</span>
+        <span style="font-size:12px;font-weight:500;margin-left:auto;">${voteResult(p)}</span>
+      </div>
+      <button class="btn btn-sm" onclick="finalizeVote(${p.id})">结束表决</button>
+    ` : `<button class="btn btn-sm btn-secondary" onclick="markDone(${p.id})">标记已${p.decisionType}</button>`}
+    ${p.result ? `<div style="margin-top:4px;padding:4px 8px;background:#e3f2fd;border-radius:3px;font-size:11px;">${p.result} | ${p.feedback || '待反馈'}</div>` : ''}
+  </div>`).join('');
+}
+
+function vote(id, choice) {
+  const p = state.proposals.find(x => x.id === id);
+  if (!p || p.result) return;
+  if (p.vote.myVote) p.vote[p.vote.myVote] = Math.max(0, p.vote[p.vote.myVote] - 1);
+  p.vote.myVote = choice; p.vote[choice]++;
+  renderAgenda();
+}
+
+function voteResult(p) {
+  const t = p.vote.yea + p.vote.nay + p.vote.abstain;
+  if (!t) return '等待投票';
+  const y = p.vote.yea / t;
+  return y >= 2/3 ? '✅ 通过' : y > 0.5 ? '⚠ 倾向通过' : '❌ 不通过';
+}
+
+function finalizeVote(id) {
+  const p = state.proposals.find(x => x.id === id);
+  if (!p) return;
+  const t = p.vote.yea + p.vote.nay + p.vote.abstain;
+  p.result = t && p.vote.yea / t >= 2/3 ? '通过' : '未通过';
+  p.feedback = prompt(p.result === '通过' ? '决议落实安排：' : '后续处理：') || '无';
+  renderAgenda(); renderProposals();
+}
+
+function markDone(id) {
+  const p = state.proposals.find(x => x.id === id);
+  if (!p) return;
+  p.result = '已' + p.decisionType;
+  p.feedback = prompt('结论：') || '无';
+  renderAgenda(); renderProposals();
+}
+
+// -- 审计 --
+function renderPreAudit() {
+  const el = document.getElementById('preAuditList');
+  const items = state.proposals.filter(p => p.auditStatus === '待审计');
+  if (!items.length) { el.innerHTML = '<div class="empty-state">暂无待审计提案。</div>'; return; }
+  el.innerHTML = items.map(p => `<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+    <div><strong>${p.title}</strong><br><span style="font-size:10px;color:#888;">${p.author}（${p.committee}）</span></div>
+    <div><button class="btn btn-sm" onclick="audit(${p.id},true)">通过</button> <button class="btn btn-sm btn-secondary" onclick="audit(${p.id},false)">退回</button></div>
+  </div>`).join('');
+}
+
+function audit(id, pass) {
+  const p = state.proposals.find(x => x.id === id);
+  if (!p) return;
+  p.auditStatus = pass ? '通过' : '退回';
+  p.auditNote = pass ? '' : (prompt('退回原因：') || '准备不充分');
+  renderPreAudit(); renderProposals();
+}
+
+function renderScoring() {
+  const el = document.getElementById('scoringArea');
+  const items = state.proposals.filter(p => p.auditStatus === '通过' && !p.result);
+  if (!items.length) { el.innerHTML = '<div class="empty-state">暂无已通过待表决的议题。</div>'; return; }
+  el.innerHTML = items.map(p => {
+    const s = state.scores[p.id] || { quality: 3, agenda: 3, rules: 3 };
+    return `<div class="card">
+      <strong>${p.title}</strong>
+      <div class="score-group"><label>议题质量</label><input type="range" min="1" max="5" value="${s.quality}" oninput="setScore(${p.id},'quality',this.value)"><span class="score-val">${s.quality}</span></div>
+      <div class="score-group"><label>议程执行</label><input type="range" min="1" max="5" value="${s.agenda}" oninput="setScore(${p.id},'agenda',this.value)"><span class="score-val">${s.agenda}</span></div>
+      <div class="score-group"><label>议事规则</label><input type="range" min="1" max="5" value="${s.rules}" oninput="setScore(${p.id},'rules',this.value)"><span class="score-val">${s.rules}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function setScore(id, field, val) {
+  if (!state.scores[id]) state.scores[id] = { quality: 3, agenda: 3, rules: 3 };
+  state.scores[id][field] = parseInt(val);
+}
+
+function generateReport() {
+  const items = state.proposals.filter(p => p.auditStatus === '通过' && p.result);
+  const done = state.proposals.filter(p => p.result);
+  const scored = done.filter(p => state.scores[p.id]);
+  if (!scored.length) { alert('暂无已表决且已评分的议题。'); return; }
+
+  const avg = f => (scored.reduce((s, p) => s + state.scores[p.id][f], 0) / scored.length).toFixed(1);
+  const overall = ((scored.reduce((s, p) => s + (state.scores[p.id].quality + state.scores[p.id].agenda + state.scores[p.id].rules), 0) / (scored.length * 3))).toFixed(1);
+
+  document.getElementById('reportArea').innerHTML = `
+    <div class="result-card">
+      <div class="result-row"><span class="label">议题总数</span><span>${state.proposals.length}</span></div>
+      <div class="result-row"><span class="label">通过/退回/已表决</span><span>${state.proposals.filter(p=>p.auditStatus==='通过').length} / ${state.proposals.filter(p=>p.auditStatus==='退回').length} / ${done.length}</span></div>
+      <div class="result-row"><span class="label">议题质量</span><span>${avg('quality')} / 5</span></div>
+      <div class="result-row"><span class="label">议程执行</span><span>${avg('agenda')} / 5</span></div>
+      <div class="result-row"><span class="label">议事规则</span><span>${avg('rules')} / 5</span></div>
+      <div class="result-row total"><span class="label">综合评分</span><span>${overall} / 5</span></div>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:#888;">
+      <p>审计负责人应于周四前完成审计报告审核。</p>
+      <p>审计负责人应于周五前完成周报审核。</p>
+      <ul style="padding-left:16px;margin-top:6px;">
+        ${avg('quality') < 4 ? '<li>议题质量需提升，建议提案人完善数据支撑和方案建议。</li>' : ''}
+        ${avg('agenda') < 4 ? '<li>议程执行需改进，建议严格控制时间，优先处理高优先级议题。</li>' : ''}
+        ${avg('rules') < 4 ? '<li>议事规则需强化，提醒遵守发言秩序，主持人保持中立。</li>' : ''}
+        ${state.proposals.some(p=>p.auditStatus==='退回') ? '<li>存在退回提案，建议按审计意见补充后重新提报。</li>' : ''}
+        ${overall >= 4 ? '<li>整体表现良好，继续保持。</li>' : ''}
+      </ul>
+    </div>`;
+}
+
+// -- 轮值书记 --
+function addSecretary() {
+  const name = document.getElementById('secName').value.trim();
+  if (!name) { alert('请输入姓名。'); return; }
+  state.secretaries.push({ name, level: document.getElementById('secLevel').value, cycle: parseInt(document.getElementById('secCycle').value) || 4 });
+  document.getElementById('secName').value = '';
+  genSchedule(); renderSecretaries();
+}
+
+function genSchedule() {
+  state.schedules = state.secretaries.map((m, i) => ({
+    id: state.secId++, name: m.name, level: m.level,
+    startWeek: i + 1, endWeek: i + m.cycle
+  }));
+}
+
+function renderSecretaries() {
+  const el = document.getElementById('secMemberList');
+  const sc = document.getElementById('secSchedule');
+  if (!state.secretaries.length) {
+    el.innerHTML = '<div class="empty-state">暂无成员。</div>';
+    sc.innerHTML = '<div class="empty-state">添加成员后自动排班。</div>';
+    return;
+  }
+  el.innerHTML = `<table><tr><th>姓名</th><th>层级</th><th>周期</th><th></th></tr>
+    ${state.secretaries.map((m, i) => `<tr><td>${m.name}</td><td><span class="tag tag-blue">${m.level}</span></td><td>${m.cycle}周</td><td><button class="btn btn-sm btn-danger" onclick="remSec(${i})">✕</button></td></tr>`).join('')}</table>`;
+  sc.innerHTML = `<table><tr><th>姓名</th><th>层级</th><th>起始周</th><th>结束周</th></tr>
+    ${state.schedules.map(s => `<tr><td>${s.name}</td><td><span class="tag tag-blue">${s.level}</span></td><td>第${s.startWeek}周</td><td>第${s.endWeek}周</td></tr>`).join('')}</table>`;
+}
+
+function remSec(idx) {
+  state.secretaries.splice(idx, 1);
+  genSchedule(); renderSecretaries();
+}
+</script>
+</body>
+</html>
