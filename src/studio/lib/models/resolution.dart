@@ -1,42 +1,20 @@
 // 决议模型
 //
-// 《会议纪要决议案》——做什么、谁负责、何时完成。
-
-enum ResolutionStatus {
-  pending('待执行'),
-  inProgress('执行中'),
-  completed('已完成'),
-  overdue('已逾期');
-
-  const ResolutionStatus(this.label);
-
-  final String label;
-}
+// 决议是决策记录：title 概括"决定了什么"，description 展开决议陈述。
+// 结构从实际议事档案标本中长出，不预设执行字段。
 
 class Resolution {
   const Resolution({
     required this.id,
-    required this.content,
-    required this.assignee,
-    required this.dueDate,
-    required this.status,
-    this.sourceMeeting,
+    required this.title,
+    required this.description,
   });
 
-  /// 做什么
-  final String content;
-
-  /// 谁负责
-  final String assignee;
-
-  /// 何时完成
-  final DateTime dueDate;
-
-  /// 执行状态
-  final ResolutionStatus status;
-
-  /// 来源会议/动议
-  final String? sourceMeeting;
-
   final String id;
+
+  /// 决定了什么（如：周会实行记名表决制）
+  final String title;
+
+  /// 决议陈述：依据、表决情况、执行安排等（自由文本）
+  final String description;
 }

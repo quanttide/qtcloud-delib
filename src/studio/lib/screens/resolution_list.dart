@@ -1,66 +1,73 @@
 // 决议管理页面
 //
-// 决议看板：展示决议的执行状态，逾期未完成逐级预警。
+// 决议清单：展示决策记录（title），点击列表项从右侧弹窗显示详情。
 
 import 'package:flutter/material.dart';
 
 import '../models/resolution.dart';
+import 'resolution_detail.dart';
 
-class ResolutionScreen extends StatefulWidget {
+class ResolutionScreen extends StatelessWidget {
   const ResolutionScreen({super.key});
 
-  @override
-  State<ResolutionScreen> createState() => ResolutionScreenState();
-}
-
-class ResolutionScreenState extends State<ResolutionScreen> {
-  final List<Resolution> _resolutions = [
+  static const List<Resolution> resolutions = [
     Resolution(
-      id: '1',
-      content: '搭建议事云议题管理模块，支持九种议题类型模板化创建',
-      assignee: '张三',
-      dueDate: DateTime(2026, 8, 7),
-      status: ResolutionStatus.inProgress,
-      sourceMeeting: '2026年第32周周会',
+      id: '2026-W32-01',
+      title: '周会实行记名表决制',
+      description: '自本周起，公司周会重大事项实行记名表决，常规事项不记名。'
+          '表决结果实时统计并留痕存档，作为审计与合规依据。',
     ),
     Resolution(
-      id: '2',
-      content: '完成议事档案按年份+周次自动归档功能',
-      assignee: '李四',
-      dueDate: DateTime(2026, 8, 1),
-      status: ResolutionStatus.overdue,
-      sourceMeeting: '2026年第31周周会',
+      id: '2026-W32-02',
+      title: '通过《周会审计流程章程》',
+      description: '审议通过《量潮科技周会审计流程章程》。'
+          '会前、会中、会后三段式审计自下周起试运行，'
+          '审计负责人周四完成审计报告审核，周五完成周报审核。',
     ),
     Resolution(
-      id: '3',
-      content: '制定电子表决规则（记名/不记名）并同步至章程',
-      assignee: '王五',
-      dueDate: DateTime(2026, 8, 14),
-      status: ResolutionStatus.pending,
-      sourceMeeting: '2026年第32周周会',
+      id: '2026-W31-03',
+      title: '议事档案按年份+周次归档',
+      description: '议事档案以议题为单位，按年份+周次组织，归档后标注时间确保可追溯。'
+          '由书记处轮值书记负责整理汇总，每周一开始、周五提交。',
     ),
     Resolution(
-      id: '4',
-      content: '周会审计评分机制上线试运行',
-      assignee: '赵六',
-      dueDate: DateTime(2026, 7, 25),
-      status: ResolutionStatus.completed,
-      sourceMeeting: '2026年第29周周会',
+      id: '2026-W31-04',
+      title: '周报引用规则',
+      description: '周报只可引用已提交到工作档案、工作章程、工作手册的资料，'
+          '不可引用原始汇报文档与原始议事文档。',
     ),
   ];
 
-  void _updateStatus(Resolution resolution, ResolutionStatus status) {
-    setState(() {
-      final int index = _resolutions.indexOf(resolution);
-      _resolutions[index] = Resolution(
-        id: resolution.id,
-        content: resolution.content,
-        assignee: resolution.assignee,
-        dueDate: resolution.dueDate,
-        status: status,
-        sourceMeeting: resolution.sourceMeeting,
-      );
-    });
+  /// 点击列表项，从右侧弹窗显示决议详情
+  void _showDetail(BuildContext context, Resolution resolution) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '决议详情',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Material(
+            elevation: 8,
+            child: SizedBox(
+              width: 420,
+              height: double.infinity,
+              child: ResolutionDetailScreen(resolution: resolution),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: animation.drive(
+            Tween(begin: const Offset(1, 0), end: Offset.zero),
+          ),
+          child: child,
+        );
+      },
+    );
   }
 
   @override
@@ -69,94 +76,24 @@ class ResolutionScreenState extends State<ResolutionScreen> {
       appBar: AppBar(
         title: const Text('决议管理'),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          for (final resolution in _resolutions) _ResolutionCard(
-            resolution: resolution,
-            onStatusChanged: (status) => _updateStatus(resolution, status),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResolutionCard extends StatelessWidget {
-  const _ResolutionCard({
-    required this.resolution,
-    required this.onStatusChanged,
-  });
-
-  final Resolution resolution;
-  final ValueChanged<ResolutionStatus> onStatusChanged;
-
-  Color _statusColor(BuildContext context) {
-    switch (resolution.status) {
-      case ResolutionStatus.completed:
-        return Colors.green;
-      case ResolutionStatus.overdue:
-        return Colors.red;
-      case ResolutionStatus.inProgress:
-        return Colors.blue;
-      case ResolutionStatus.pending:
-        return Colors.orange;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    resolution.content,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                Chip(
-                  label: Text(resolution.status.label),
-                  backgroundColor: _statusColor(context).withValues(alpha: 0.15),
-                  labelStyle: TextStyle(color: _statusColor(context)),
-                ),
-              ],
+        itemCount: resolutions.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final Resolution resolution = resolutions[index];
+          return ListTile(
+            leading: const Icon(Icons.gavel),
+            title: Text(resolution.title),
+            subtitle: Text(
+              resolution.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
-            Text('负责人：${resolution.assignee}'),
-            Text('截止：${resolution.dueDate.toString().split(' ').first}'),
-            if (resolution.sourceMeeting != null)
-              Text('来源：${resolution.sourceMeeting}'),
-            if (resolution.status == ResolutionStatus.overdue) ...[
-              const SizedBox(height: 8),
-              Text(
-                '⚠ 已逾期，请尽快处理',
-                style: TextStyle(color: Colors.red.shade700),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                for (final status in ResolutionStatus.values)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ActionChip(
-                      label: Text(status.label),
-                      onPressed: status == resolution.status
-                          ? null
-                          : () => onStatusChanged(status),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showDetail(context, resolution),
+          );
+        },
       ),
     );
   }
