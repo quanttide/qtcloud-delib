@@ -21,7 +21,7 @@
 ## studio 静态网站部署
 
 - 基础设施：`terraform apply`（`studio.tf`：桶 + 静态托管 + 公共读；注意首次需关闭该桶"阻止公共访问"，见 issue 记录）
-- 构建上传：`.github/workflows/deploy-studio.yml`（Release `studio/*` 触发 → flutter build web → ossutil cp → 刷新 CDN）
+- 构建上传：`.github/workflows/deploy-studio.yml`（推送 tag `studio/*` 触发 → flutter build web → ossutil cp → 刷新 CDN）
 - 证书：acme.sh 泛域名证书（`scripts/deploy-studio-cert.py` 绑定 CDN，续期后重跑）
 
 ## 使用
