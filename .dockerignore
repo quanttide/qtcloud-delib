@@ -1,0 +1,12 @@
+# 构建上下文排除（context = 仓库根，域根布局：apps/ + packages/）
+# 测试与本地产物不进入镜像
+.git
+.github
+docs
+manifests
+src/cli
+src/studio
+bin
+data
+*.test
+*.db

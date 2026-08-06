@@ -18,6 +18,8 @@
 #   - ACR 仓库 quanttide/qtcloud-delib-provider 已由主账号创建（PUBLIC，FC 免凭证直拉）；
 #     本 workflow 不创建仓库（CI 的 RAM 用户无 ACR 管理权限，且个人版实例的 aliyun CLI cr API 不稳定）
 
+# 镜像构建需要 go.mod replace 的目标（域级工具库），构建上下文必须为域根布局：
+# app → apps/qtcloud-delib，toolkit → packages/quanttide-delib-toolkit（与 ci.yml 一致）
 name: Deploy Provider
 
 on:
@@ -45,8 +47,17 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
     steps:
-      - name: Checkout
+      # 对齐域仓库布局（apps/qtcloud-delib），使 Dockerfile 内 replace 相对路径成立
+      - name: Checkout app
         uses: actions/checkout@v4
+        with:
+          path: apps/qtcloud-delib
+
+      - name: Checkout toolkit（replace 依赖）
+        uses: actions/checkout@v4
+        with:
+          repository: quanttide/quanttide-delib-toolkit
+          path: packages/quanttide-delib-toolkit
 
       # tag provider/v0.1.0 → 镜像 tag v0.1.0（仅 tag 触发，无手动入口）
       - name: Resolve Image Tag
@@ -74,7 +85,8 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
-          context: src/provider
+          context: .
+          file: apps/qtcloud-delib/src/provider/Dockerfile
           push: true
           # 关键：关闭 provenance/sbom attestation——其 manifest 平台为 unknown/unknown，
           # FC 3.0 镜像优化器会拒绝（ImageOptimizingFailed: platform of image is unknown/unknown）

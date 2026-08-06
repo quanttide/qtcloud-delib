@@ -1,9 +1,12 @@
 # 本地开发环境：一键构建并启动决议服务
 # 用法：docker compose up -d --build   （停止：docker compose down）
 # 数据：SQLite 文件库持久化挂载到 ./data/qtcloud-delib.db；容器内以非 root 用户（app）运行
+# 构建上下文为仓库根（域根布局 apps/ + packages/），使 go.mod replace 相对路径成立
 services:
   provider:
-    build: .
+    build:
+      context: ../..
+      dockerfile: src/provider/Dockerfile
     image: qtcloud-delib-provider:local
     container_name: qtcloud-delib-provider
     ports:
