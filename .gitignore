@@ -3,3 +3,4 @@ src/cli/target/
 
 # Go
 src/provider/bin/
+src/provider/qtcloud-delib-provider
