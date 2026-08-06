@@ -36,7 +36,10 @@ void main() {
 
     expect(find.byType(ResolutionDetailScreen), findsOneWidget);
     expect(find.text('决议详情'), findsOneWidget);
-    expect(find.text('编号：2026-W32-01 · 治理'), findsOneWidget);
+    expect(
+      find.text('编号：f29eb8a9-dc51-4527-ac6b-019ce0d03d79 · 治理'),
+      findsOneWidget,
+    );
     expect(find.textContaining('记名表决'), findsWidgets);
   });
 }
