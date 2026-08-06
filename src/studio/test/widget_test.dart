@@ -138,7 +138,8 @@ void main() {
       find.text('编号：f29eb8a9-dc51-4527-ac6b-019ce0d03d79 · 治理'),
       findsOneWidget,
     );
-    expect(find.textContaining('记名表决'), findsWidgets);
+    // Markdown 渲染的正文在 RichText 中，需 findRichText 匹配
+    expect(find.textContaining('记名表决', findRichText: true), findsWidgets);
   });
 
   testWidgets('新建决议提交后刷新列表', (WidgetTester tester) async {

@@ -38,6 +38,9 @@ dependencies:
   # HTTP 客户端：对接 provider（决议服务端 API）
   http: ^1.2.0
 
+  # Markdown 渲染：决议陈述（content）为 Markdown 格式（种子标本）
+  flutter_markdown: ^0.7.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
