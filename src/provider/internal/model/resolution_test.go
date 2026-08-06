@@ -4,9 +4,10 @@ import "testing"
 
 func TestResolution(t *testing.T) {
 	r := Resolution{
-		ID:      "2026-W32-01",
-		Title:   "周会实行记名表决制",
-		Content: "重大事项记名表决，常规事项不记名，结果留痕存档。",
+		ID:       "2026-W32-01",
+		Title:    "周会实行记名表决制",
+		Content:  "重大事项记名表决，常规事项不记名，结果留痕存档。",
+		Category: "治理",
 	}
 
 	if r.ID != "2026-W32-01" {
@@ -17,5 +18,8 @@ func TestResolution(t *testing.T) {
 	}
 	if r.Content == "" {
 		t.Error("Content should not be empty")
+	}
+	if r.Category != "治理" {
+		t.Errorf("Category = %q, want %q", r.Category, "治理")
 	}
 }
