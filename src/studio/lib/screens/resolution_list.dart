@@ -13,6 +13,7 @@ class ResolutionScreen extends StatelessWidget {
   static const List<Resolution> resolutions = [
     Resolution(
       id: 'f29eb8a9-dc51-4527-ac6b-019ce0d03d79',
+      name: 'weekly-vote',
       title: '周会实行记名表决制',
       content:
           '自本周起，公司周会重大事项实行记名表决，常规事项不记名。'
@@ -21,6 +22,7 @@ class ResolutionScreen extends StatelessWidget {
     ),
     Resolution(
       id: '86c66247-af30-49a8-b24b-3e4a611d316a',
+      name: 'audit-charter',
       title: '通过《周会审计流程章程》',
       content:
           '审议通过《量潮科技周会审计流程章程》。'
@@ -30,6 +32,7 @@ class ResolutionScreen extends StatelessWidget {
     ),
     Resolution(
       id: 'e3c0649a-cdc9-4690-a898-a275278dc122',
+      name: 'archive-weekly',
       title: '议事档案按年份+周次归档',
       content:
           '议事档案以议题为单位，按年份+周次组织，归档后标注时间确保可追溯。'
@@ -38,6 +41,7 @@ class ResolutionScreen extends StatelessWidget {
     ),
     Resolution(
       id: '1afdfac9-ca88-493c-9c01-f5ef944faf03',
+      name: 'weekly-report-rules',
       title: '周报引用规则',
       content:
           '周报只可引用已提交到工作档案、工作章程、工作手册的资料，'

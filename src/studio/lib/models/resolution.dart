@@ -1,6 +1,7 @@
 // 决议模型
 //
-// 决议是决策记录：id 为 UUID，title 概括"决定了什么"，content 展开决议陈述，
+// 决议是决策记录：id 为 UUID，name 为决议标识（slug，取自文件名），
+// title 概括"决定了什么"，content 展开决议陈述，
 // category 标注决议分类（如：治理、审计、档案、技术等）。
 // 结构从实际议事档案标本中长出，不预设执行字段。
 // content 当前为纯文本，未来可扩展为结构化内容。
@@ -8,6 +9,7 @@
 class Resolution {
   const Resolution({
     required this.id,
+    required this.name,
     required this.title,
     required this.content,
     required this.category,
@@ -15,6 +17,9 @@ class Resolution {
 
   /// 决议唯一标识（UUID）
   final String id;
+
+  /// 决议标识（slug，取自文件名，如 data-contract）
+  final String name;
 
   /// 决定了什么（如：周会实行记名表决制）
   final String title;
