@@ -23,7 +23,6 @@ on:
   push:
     tags:
       - 'studio/**'
-  workflow_dispatch:
 
 concurrency:
   group: deploy-studio
