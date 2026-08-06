@@ -1,7 +1,7 @@
 // Package seed 决议种子数据导入：从云端 GitHub（raw）拉取 profile 决议标本写入数据库。
 //
 // 数据来源：data/profile 子模块的 resolutions/*.json（云端仓库
-// github.com/quanttide/quanttide-profile-of-deliberation）。
+// github.com/quanttide/quanttide-profile-of-deliberation-management）。
 // 通过云端拉取而非本地子模块路径，避免运行时依赖子模块 checkout 状态。
 package seed
 
@@ -24,8 +24,8 @@ import (
 
 // 默认数据源（云端 GitHub）。
 const (
-	DefaultAPIURL     = "https://api.github.com/repos/quanttide/quanttide-profile-of-deliberation/contents/resolutions"
-	DefaultRawBaseURL = "https://raw.githubusercontent.com/quanttide/quanttide-profile-of-deliberation/main/resolutions"
+	DefaultAPIURL     = "https://api.github.com/repos/quanttide/quanttide-profile-of-deliberation-management/contents/resolutions"
+	DefaultRawBaseURL = "https://raw.githubusercontent.com/quanttide/quanttide-profile-of-deliberation-management/main/resolutions"
 )
 
 // Import 拉取并导入决议标本（幂等：按 name 跳过已存在），返回导入数量。
