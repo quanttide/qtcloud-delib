@@ -10,3 +10,7 @@ name = "qtcloud-delib"
 path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4", features = ["derive", "env"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = "2"

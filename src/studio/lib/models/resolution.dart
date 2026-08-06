@@ -29,4 +29,26 @@ class Resolution {
 
   /// 决议分类（如：治理、审计、档案、技术等）
   final String category;
+
+  /// 从服务端 JSON 解析决议
+  factory Resolution.fromJson(Map<String, dynamic> json) {
+    return Resolution(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      title: json['title'] as String,
+      content: json['content'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+    );
+  }
+
+  /// 序列化为服务端 JSON（POST /resolutions 请求体）
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'title': title,
+      'content': content,
+      'category': category,
+    };
+  }
 }
