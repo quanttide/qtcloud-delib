@@ -1,4 +1,4 @@
-package model
+package resolution
 
 import "testing"
 

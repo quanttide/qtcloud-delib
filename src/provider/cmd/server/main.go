@@ -1,41 +1,61 @@
-// qtcloud-delib-provider 量潮议事云服务提供方入口。
-
+// Package main 服务端入口：加载配置、组装依赖、启动服务。
 package main
 
 import (
-	"log/slog"
+	"context"
+	"errors"
+	"flag"
+	"log"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/quanttide/qtcloud-delib-provider/internal/api"
-	"github.com/quanttide/qtcloud-delib-provider/internal/store"
+	"github.com/quanttide/qtcloud-delib-provider/internal/app"
 )
 
 func main() {
-	// ── 存储（开发调试用内存实现，后续对接数据库） ──
-	st := store.NewMemoryStore()
-	resolutionStore := store.NewResolutionStore(st)
+	addr := flag.String("addr", ":8080", "HTTP 监听地址")
+	flag.Parse()
 
-	// ── 决议处理器 ──
-	handler := api.NewResolutionHandler(resolutionStore)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	// ── 路由 ──
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /resolutions", handler.List)
-	mux.HandleFunc("POST /resolutions", handler.Create)
-
-	// ── 启动 ──
-	addr := getEnv("LISTEN_ADDR", ":8080")
-	slog.Info("starting provider", "addr", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		slog.Error("server error", "error", err)
-		os.Exit(1)
+	if err := run(ctx, *addr); err != nil {
+		log.Fatalf("server: %v", err)
 	}
 }
 
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+// run 打开数据库、组装路由并启动服务（含优雅关闭）。
+func run(ctx context.Context, addr string) error {
+	db, err := app.OpenDB()
+	if err != nil {
+		return err
 	}
-	return fallback
+	mux, err := app.BuildMux(db)
+	if err != nil {
+		return err
+	}
+
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	log.Printf("API server listening on %s", ln.Addr())
+
+	srv := &http.Server{Handler: mux}
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			log.Printf("shutdown: %v", err)
+		}
+	}()
+	if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }

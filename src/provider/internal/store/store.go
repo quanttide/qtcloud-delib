@@ -1,7 +1,7 @@
-// Package store 提供存储抽象。
+// Package store 提供存储抽象（MVP 遗留，保留为测试替身；生产走 internal/resolution/gorm）。
 package store
 
-import "github.com/quanttide/qtcloud-delib-provider/internal/model"
+import "github.com/quanttide/qtcloud-delib-provider/internal/resolution"
 
 // Storer 抽象存储后端，可对接任意存储实现（内存、文件、数据库等）。
 type Storer interface {
@@ -45,7 +45,7 @@ func NewResolutionStore(st Storer) *ResolutionStore {
 	return &ResolutionStore{Storer: st}
 }
 
-func (s *ResolutionStore) Create(r *model.Resolution) (string, error) {
+func (s *ResolutionStore) Create(r *resolution.Resolution) (string, error) {
 	// TODO: 序列化后写入 Storer
 	return r.ID, nil
 }
