@@ -14,26 +14,30 @@ class ResolutionScreen extends StatelessWidget {
     Resolution(
       id: '2026-W32-01',
       title: '周会实行记名表决制',
-      description: '自本周起，公司周会重大事项实行记名表决，常规事项不记名。'
+      content:
+          '自本周起，公司周会重大事项实行记名表决，常规事项不记名。'
           '表决结果实时统计并留痕存档，作为审计与合规依据。',
     ),
     Resolution(
       id: '2026-W32-02',
       title: '通过《周会审计流程章程》',
-      description: '审议通过《量潮科技周会审计流程章程》。'
+      content:
+          '审议通过《量潮科技周会审计流程章程》。'
           '会前、会中、会后三段式审计自下周起试运行，'
           '审计负责人周四完成审计报告审核，周五完成周报审核。',
     ),
     Resolution(
       id: '2026-W31-03',
       title: '议事档案按年份+周次归档',
-      description: '议事档案以议题为单位，按年份+周次组织，归档后标注时间确保可追溯。'
+      content:
+          '议事档案以议题为单位，按年份+周次组织，归档后标注时间确保可追溯。'
           '由书记处轮值书记负责整理汇总，每周一开始、周五提交。',
     ),
     Resolution(
       id: '2026-W31-04',
       title: '周报引用规则',
-      description: '周报只可引用已提交到工作档案、工作章程、工作手册的资料，'
+      content:
+          '周报只可引用已提交到工作档案、工作章程、工作手册的资料，'
           '不可引用原始汇报文档与原始议事文档。',
     ),
   ];
@@ -73,9 +77,7 @@ class ResolutionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('决议管理'),
-      ),
+      appBar: AppBar(title: const Text('决议管理')),
       body: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: resolutions.length,
@@ -86,7 +88,7 @@ class ResolutionScreen extends StatelessWidget {
             leading: const Icon(Icons.gavel),
             title: Text(resolution.title),
             subtitle: Text(
-              resolution.description,
+              resolution.content,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

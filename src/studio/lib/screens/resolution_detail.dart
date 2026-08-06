@@ -1,6 +1,6 @@
 // 决议详情页面
 //
-// 展示决议的完整陈述（description），由决议列表右侧弹窗打开。
+// 展示决议的完整陈述（content），由决议列表右侧弹窗打开。
 
 import 'package:flutter/material.dart';
 
@@ -27,10 +27,7 @@ class ResolutionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              resolution.title,
-              style: textTheme.headlineSmall,
-            ),
+            Text(resolution.title, style: textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               '编号：${resolution.id}',
@@ -40,7 +37,7 @@ class ResolutionDetailScreen extends StatelessWidget {
             ),
             const Divider(height: 32),
             Text(
-              resolution.description,
+              resolution.content,
               style: textTheme.bodyLarge?.copyWith(height: 1.6),
             ),
           ],
