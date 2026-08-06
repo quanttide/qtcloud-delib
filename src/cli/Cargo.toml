@@ -1,0 +1,12 @@
+[package]
+name = "qtcloud-delib-cli"
+version = "0.1.0"
+edition = "2024"
+description = "量潮议事云命令行工具"
+license = "Apache-2.0"
+
+[[bin]]
+name = "qtcloud-delib"
+path = "src/main.rs"
+
+[dependencies]
