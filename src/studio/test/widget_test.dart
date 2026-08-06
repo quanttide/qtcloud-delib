@@ -1,6 +1,6 @@
 // 量潮议事云冒烟测试
 //
-// 决议列表通过注入替身 API（_FakeResolutionApi）测试，
+// 主框架（侧边导航）与决议列表通过注入替身 API（_FakeResolutionApi）测试，
 // 避免 Widget 测试发起真实网络请求。
 
 import 'package:flutter/material.dart';
@@ -57,15 +57,32 @@ const Resolution sample = Resolution(
   category: '治理',
 );
 
+Widget _shellWith(_FakeResolutionApi api) =>
+    MaterialApp(home: MainShell(api: api));
+
 Widget _screenWith(_FakeResolutionApi api) =>
     MaterialApp(home: ResolutionScreen(api: api));
 
 void main() {
-  testWidgets('首页显示功能入口', (WidgetTester tester) async {
-    await tester.pumpWidget(const DelibApp());
+  testWidgets('主框架显示侧边导航（议题/决议），默认选中议题', (WidgetTester tester) async {
+    await tester.pumpWidget(_shellWith(_FakeResolutionApi()));
 
-    expect(find.text('量潮议事云'), findsOneWidget);
-    expect(find.text('决议管理'), findsOneWidget);
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.text('议题'), findsOneWidget);
+    expect(find.text('决议'), findsOneWidget);
+    expect(find.text('议题功能建设中'), findsOneWidget);
+    expect(find.byType(ResolutionScreen), findsNothing);
+  });
+
+  testWidgets('点击决议导航项切换为决议列表', (WidgetTester tester) async {
+    await tester.pumpWidget(_shellWith(_FakeResolutionApi(items: [sample])));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('决议'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ResolutionScreen), findsOneWidget);
+    expect(find.text('周会实行记名表决制'), findsOneWidget);
   });
 
   testWidgets('决议列表显示服务端加载的决议标题', (WidgetTester tester) async {
