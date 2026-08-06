@@ -1,11 +1,11 @@
 {
-    "name": "studio",
-    "short_name": "studio",
+    "name": "量潮议事云",
+    "short_name": "量潮议事云",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "量潮议事云 — 决议管理",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

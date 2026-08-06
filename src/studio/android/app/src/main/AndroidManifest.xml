@@ -2,7 +2,7 @@
     <!-- 对接 provider（决议服务端 API）需要网络访问 -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="studio"
+        android:label="量潮议事云"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
