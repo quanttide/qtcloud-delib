@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] - 2026-08-06
+
+### Fixed
+- deploy 首次部署：RDS 唤醒不再依赖本地 state，按命名（`quanttide-<env>`）查询平台共享实例并触发启动（实例已存在，无需创建）
+
 ## [0.1.0-alpha.3] - 2026-08-06
 
 ### Fixed
