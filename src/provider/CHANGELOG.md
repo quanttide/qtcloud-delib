@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.5] - 2026-08-06
+
+### Changed
+- 种子导入幂等增强：已存在按 name 同步更新（title/content/category，ID 不变），本地重复导入可同步云端标本演进
+
+### Removed
+- 生产种子导入自动化（POST /seed 端点、SEED_TOKEN、流水线 Seed 步骤）——生产数据在部署成功后手动上传，seed 仅用于本地开发（cmd/seed）
+- deploy workflow 的 workflow_dispatch 手动触发入口（仅保留 tag 触发）
+
 ## [0.1.0-alpha.4] - 2026-08-06
 
 ### Fixed
