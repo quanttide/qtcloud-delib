@@ -26,6 +26,13 @@ on:
   push:
     tags:
       - 'provider/**'
+  # 手动触发（重跑部署/导入种子数据，镜像 tag 默认 main）
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 镜像 tag（默认 main，即当前 main 构建）
+        required: false
+        default: main
 
 concurrency:
   group: deploy-provider
@@ -59,11 +66,15 @@ jobs:
           repository: quanttide/quanttide-delib-toolkit
           path: packages/quanttide-delib-toolkit
 
-      # tag provider/v0.1.0 → 镜像 tag v0.1.0（仅 tag 触发，无手动入口）
+      # tag provider/v0.1.0 → 镜像 tag v0.1.0；workflow_dispatch → 输入 tag（默认 main）
       - name: Resolve Image Tag
         id: image
         run: |
-          TAG="${GITHUB_REF_NAME#provider/}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            TAG="${GITHUB_REF_NAME#provider/}"
+          fi
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
@@ -120,13 +131,32 @@ jobs:
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
     steps:
-      - name: Checkout
+      # 对齐域仓库布局（apps/qtcloud-delib + packages/），seed 编译需要工具库 replace
+      - name: Checkout app
         uses: actions/checkout@v4
+        with:
+          path: apps/qtcloud-delib
+
+      - name: Checkout toolkit（replace 依赖）
+        uses: actions/checkout@v4
+        with:
+          repository: quanttide/quanttide-delib-toolkit
+          path: packages/quanttide-delib-toolkit
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: apps/qtcloud-delib/src/provider/go.sum
 
       # 部署镜像固定指向 ACR（FC 中国区拉不到 Docker Hub）；仅写入 GITHUB_ENV，不进 job output
       - name: Resolve Image Name
         run: |
-          TAG="${GITHUB_REF_NAME#provider/}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            TAG="${GITHUB_REF_NAME#provider/}"
+          fi
           echo "TF_VAR_image=${{ secrets.ALIYUN_ACR_REGISTRY }}/${ACR_NAMESPACE}/qtcloud-delib-provider:${TAG}" >> "$GITHUB_ENV"
 
       - name: Setup Terraform
@@ -200,3 +230,19 @@ jobs:
       - name: Terraform Apply
         working-directory: manifests/terraform
         run: terraform apply -input=false -no-color tfplan
+
+      # 生产种子数据：apply 成功后导入云端标本（幂等：新增 + 按 name 同步更新）
+      - name: Resolve DATABASE_URL
+        working-directory: manifests/terraform
+        run: |
+          HOST="$(terraform output -raw rds_connection_string)"
+          echo "DATABASE_URL=postgres://qtcloud_delib:${DB_PASSWORD}@${HOST}:5432/qtcloud_delib?sslmode=disable" >> "$GITHUB_ENV"
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+      - name: Seed Resolutions
+        working-directory: apps/qtcloud-delib/src/provider
+        env:
+          DB_DRIVER: postgres
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: go run ./cmd/seed

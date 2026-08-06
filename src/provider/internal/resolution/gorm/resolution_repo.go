@@ -43,4 +43,12 @@ func (r *ResolutionRepo) Create(db *gorm.DB, res *resolution.Resolution) error {
 	return db.Create(res).Error
 }
 
+func (r *ResolutionRepo) UpdateByName(db *gorm.DB, name string, res *resolution.Resolution) error {
+	return db.Model(&resolution.Resolution{}).Where("name = ?", name).Updates(map[string]any{
+		"title":    res.Title,
+		"content":  res.Content,
+		"category": res.Category,
+	}).Error
+}
+
 var _ resolution.Repository = (*ResolutionRepo)(nil)

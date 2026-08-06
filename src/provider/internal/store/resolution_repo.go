@@ -49,4 +49,16 @@ func (r *ResolutionRepo) Create(db *gorm.DB, res *resolution.Resolution) error {
 	return nil
 }
 
+func (r *ResolutionRepo) UpdateByName(db *gorm.DB, name string, res *resolution.Resolution) error {
+	existing, ok := r.items[name]
+	if !ok {
+		return gorm.ErrRecordNotFound
+	}
+	existing.Title = res.Title
+	existing.Content = res.Content
+	existing.Category = res.Category
+	r.items[name] = existing
+	return nil
+}
+
 var _ resolution.Repository = (*ResolutionRepo)(nil)

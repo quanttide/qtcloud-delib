@@ -25,9 +25,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}
-	imported, err := seed.Import(ctx, db, *apiURL, *rawBase)
+	imported, updated, err := seed.Import(ctx, db, *apiURL, *rawBase)
 	if err != nil {
 		log.Fatalf("seed: %v", err)
 	}
-	log.Printf("seed done: imported %d resolutions", imported)
+	log.Printf("seed done: imported %d, updated %d", imported, updated)
 }

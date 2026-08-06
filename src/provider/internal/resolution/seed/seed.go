@@ -28,46 +28,51 @@ const (
 	DefaultRawBaseURL = "https://raw.githubusercontent.com/quanttide/quanttide-profile-of-deliberation-management/main/resolutions"
 )
 
-// Import 拉取并导入决议标本（幂等：按 name 跳过已存在），返回导入数量。
-func Import(ctx context.Context, db *gorm.DB, apiURL, rawBaseURL string) (int, error) {
+// Import 拉取并导入决议标本（幂等：按 name 已存在则更新 title/content/category），
+// 返回（新增数, 更新数）。
+func Import(ctx context.Context, db *gorm.DB, apiURL, rawBaseURL string) (imported, updated int, err error) {
 	names, err := listResolutionFiles(ctx, apiURL)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	repo := resolutiongorm.NewResolutionRepo()
 	client := &http.Client{Timeout: 30 * time.Second}
-	imported := 0
 	for _, name := range names {
 		if err := ctx.Err(); err != nil {
-			return imported, err
+			return imported, updated, err
 		}
 		raw, err := fetch(ctx, client, rawBaseURL+"/"+name)
 		if err != nil {
-			return imported, fmt.Errorf("fetch %s: %w", name, err)
+			return imported, updated, fmt.Errorf("fetch %s: %w", name, err)
 		}
 		var tkit delib.Resolution
 		if err := json.Unmarshal(raw, &tkit); err != nil {
-			return imported, fmt.Errorf("parse %s: %w", name, err)
+			return imported, updated, fmt.Errorf("parse %s: %w", name, err)
 		}
 		res := resolution.Resolution{
 			ID: tkit.ID, Name: tkit.Name, Title: tkit.Title,
 			Content: tkit.Content, Category: tkit.Category,
 		}
 		if res.Name == "" {
-			return imported, fmt.Errorf("specimen %s missing name", name)
+			return imported, updated, fmt.Errorf("specimen %s missing name", name)
 		}
 		if _, err := repo.GetByName(db, res.Name); err == nil {
-			continue // 已存在，跳过（幂等）
+			// 已存在：同步最新内容（title/content/category，ID 不变）
+			if err := repo.UpdateByName(db, res.Name, &res); err != nil {
+				return imported, updated, fmt.Errorf("update %s: %w", name, err)
+			}
+			updated++
+			continue
 		} else if err != gorm.ErrRecordNotFound {
-			return imported, fmt.Errorf("check %s: %w", name, err)
+			return imported, updated, fmt.Errorf("check %s: %w", name, err)
 		}
 		if err := repo.Create(db, &res); err != nil {
-			return imported, fmt.Errorf("create %s: %w", name, err)
+			return imported, updated, fmt.Errorf("create %s: %w", name, err)
 		}
 		imported++
 	}
-	return imported, nil
+	return imported, updated, nil
 }
 
 // listResolutionFiles 经 GitHub contents API 列出决议目录下的 JSON 标本文件名。
