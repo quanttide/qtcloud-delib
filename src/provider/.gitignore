@@ -1,0 +1,16 @@
+# Go coverage output
+*.out
+*.cover.out
+
+# Go vendor
+vendor/
+
+# Go workspace
+*.work
+
+# Build output
+bin/
+
+# 本地数据（SQLite 文件库）
+data/
+*.db
