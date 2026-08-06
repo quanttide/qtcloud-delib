@@ -165,7 +165,7 @@ jobs:
           terraform_version: '1.15.8' # 对齐本地环境
 
       - name: Terraform Init（OSS 远程状态）
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: |
           terraform init -input=false \
             -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
@@ -180,7 +180,7 @@ jobs:
           version: '3.4.11' # 锁版本：latest 曾致 cr API 参数漂移
 
       - name: Ensure RDS Instance Running
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: |
           set -euo pipefail
           # 已部署环境：优先从本地 state 的 platform remote state 记录取实例 ID
@@ -220,20 +220,20 @@ jobs:
           fi
 
       - name: Terraform Validate
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: terraform validate -no-color
 
       - name: Terraform Plan
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: terraform plan -input=false -no-color -out=tfplan
 
       - name: Terraform Apply
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: terraform apply -input=false -no-color tfplan
 
       # 生产种子数据：apply 成功后导入云端标本（幂等：新增 + 按 name 同步更新）
       - name: Resolve DATABASE_URL
-        working-directory: manifests/terraform
+        working-directory: apps/qtcloud-delib/manifests/terraform
         run: |
           HOST="$(terraform output -raw rds_connection_string)"
           echo "DATABASE_URL=postgres://qtcloud_delib:${DB_PASSWORD}@${HOST}:5432/qtcloud_delib?sslmode=disable" >> "$GITHUB_ENV"
