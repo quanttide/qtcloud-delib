@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.2] - 2026-08-06
+
+### Added
+- 侧边导航框架（NavigationRail：议题 / 决议 + 内容区），替代首页宫格深推；议题页占位（服务端议题 API 待接入）
+- 决议详情 Markdown 渲染（flutter_markdown_plus，种子标本陈述为 Markdown 格式）
+- 决议列表元信息展示（分类 Chip + slug）
+- 应用标题统一为「量潮议事云」（Linux 窗口 / Web / Android / iOS）
+
+### Changed
+- API 地址经 `--dart-define=QTCLOUD_DELIB_API_BASE_URL` 注入，部署流水线读 repo 级变量
+- 部署触发改为推送 `studio/*` tag（对齐 provider 模式）
+
 ## [0.1.0-alpha.1] - 2026-08-06
 
 ### Added
