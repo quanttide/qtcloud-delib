@@ -153,11 +153,20 @@ jobs:
         working-directory: manifests/terraform
         run: |
           set -euo pipefail
-          # 首次部署时本地 state 为空，无 platform remote state 记录（RDS 唤醒依赖该记录）
+          # 已部署环境：优先从本地 state 的 platform remote state 记录取实例 ID
           INSTANCE_ID="$(terraform state pull 2>/dev/null | jq -r '.resources[] | select(.type=="terraform_remote_state" and .name=="platform") | .instances[0].attributes.outputs.value.rds_instance_id' 2>/dev/null || true)"
           if [ -z "${INSTANCE_ID}" ] || [ "${INSTANCE_ID}" = "null" ]; then
-            echo "首次部署：state 无 platform 记录，跳过 RDS 唤醒（若 apply 因 RDS AutoPause 暂停失败，先确保平台 RDS Running 后重跑）"
-            exit 0
+            # 首次部署：本地 state 无记录，RDS 实例已由 platform 创建（共享），按命名直接查询唤醒
+            INSTANCE_ID="$(aliyun rds DescribeDBInstances --RegionId "${TF_VAR_region}" | jq -r --arg desc "quanttide-${TF_VAR_environment}" '.Items.DBInstance[] | select(.DBInstanceDescription==$desc) | .DBInstanceId' | head -1)"
+            # 兜底：仅一个实例时直接使用
+            if [ -z "${INSTANCE_ID}" ]; then
+              INSTANCE_ID="$(aliyun rds DescribeDBInstances --RegionId "${TF_VAR_region}" | jq -r '.Items.DBInstance | if length==1 then .[0].DBInstanceId else empty end')"
+            fi
+            if [ -z "${INSTANCE_ID}" ]; then
+              echo "::warning::未找到平台共享 RDS（期望 quanttide-${TF_VAR_environment}），跳过唤醒"
+              exit 0
+            fi
+            echo "首次部署：按命名发现共享 RDS: ${INSTANCE_ID}"
           fi
           echo "RDS instance: ${INSTANCE_ID}"
           STATUS() { aliyun rds DescribeDBInstances --RegionId "${TF_VAR_region}" | jq -r --arg id "${INSTANCE_ID}" '.Items.DBInstance[] | select(.DBInstanceId==$id) | .DBInstanceStatus'; }
