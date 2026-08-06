@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.1] - 2026-08-06
+
+### Added
+- 唯一键冲突映射 `409 Conflict`：重复 `name` 创建返回 `name already exists`（此前为 500）
+
 ## [0.1.0-alpha.5] - 2026-08-06
 
 ### Changed
