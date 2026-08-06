@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] - 2026-08-06
+
 ### Added
 - 生产化改造（对齐 qtcloud-pay provider 架构）：
   - 数据层：GORM + Repository 模式（开发 SQLite / 生产 PostgreSQL 方言切换），`internal/store` 保留为测试替身
