@@ -78,3 +78,22 @@ func TestCreateResolutionBadBody(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
 	}
 }
+
+func TestCreateResolutionDuplicateName(t *testing.T) {
+	mux := newTestMux(t)
+	payload := `{"name":"weekly-vote","title":"周会实行记名表决制"}`
+	for i := 0; i < 2; i++ {
+		req := httptest.NewRequest(http.MethodPost, "/resolutions", bytes.NewBufferString(payload))
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		if i == 0 {
+			if rec.Code != http.StatusCreated {
+				t.Fatalf("first create: status = %d", rec.Code)
+			}
+			continue
+		}
+		if rec.Code != http.StatusConflict {
+			t.Fatalf("duplicate create: status = %d, want %d; body = %s", rec.Code, http.StatusConflict, rec.Body.String())
+		}
+	}
+}

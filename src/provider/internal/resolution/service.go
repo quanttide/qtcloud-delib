@@ -12,6 +12,9 @@ import (
 // ErrInvalidInput 决议入参不合法（name/title 必填）。
 var ErrInvalidInput = errors.New("resolution: invalid input")
 
+// ErrDuplicateName name（slug）已存在，唯一索引冲突。
+var ErrDuplicateName = errors.New("resolution: duplicate name")
+
 // Service 决议服务：业务规则与用例编排。
 type Service struct {
 	db   *gorm.DB
@@ -42,6 +45,9 @@ func (s *Service) Create(ctx context.Context, r *Resolution) (*Resolution, error
 		r.ID = uuid.NewString()
 	}
 	if err := s.repo.Create(s.db, r); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrDuplicateName
+		}
 		return nil, err
 	}
 	return r, nil

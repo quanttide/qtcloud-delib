@@ -46,6 +46,8 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, ErrInvalidInput):
 			httpserver.WriteError(w, http.StatusBadRequest, "name and title are required")
+		case errors.Is(err, ErrDuplicateName):
+			httpserver.WriteError(w, http.StatusConflict, "name already exists")
 		default:
 			httpserver.WriteError(w, http.StatusInternalServerError, "create failed")
 		}

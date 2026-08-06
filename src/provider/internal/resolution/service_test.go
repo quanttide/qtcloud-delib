@@ -2,6 +2,7 @@ package resolution_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"gorm.io/driver/sqlite"
@@ -84,5 +85,18 @@ func TestServiceCreateInvalid(t *testing.T) {
 		if _, err := svc.Create(ctx, c); err == nil {
 			t.Errorf("Create(%+v): want error", c)
 		}
+	}
+}
+
+func TestServiceCreateDuplicateName(t *testing.T) {
+	db := setupDB(t)
+	svc := resolution.NewService(db, resolutiongorm.NewResolutionRepo())
+	ctx := context.Background()
+
+	if _, err := svc.Create(ctx, &resolution.Resolution{Name: "data-contract", Title: "数据契约"}); err != nil {
+		t.Fatalf("first create: %v", err)
+	}
+	if _, err := svc.Create(ctx, &resolution.Resolution{Name: "data-contract", Title: "重复"}); !errors.Is(err, resolution.ErrDuplicateName) {
+		t.Fatalf("second create = %v, want ErrDuplicateName", err)
 	}
 }
