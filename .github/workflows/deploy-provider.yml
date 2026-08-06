@@ -153,7 +153,12 @@ jobs:
         working-directory: manifests/terraform
         run: |
           set -euo pipefail
-          INSTANCE_ID="$(terraform state pull | jq -r '.resources[] | select(.type=="terraform_remote_state" and .name=="platform") | .instances[0].attributes.outputs.value.rds_instance_id')"
+          # 首次部署时本地 state 为空，无 platform remote state 记录（RDS 唤醒依赖该记录）
+          INSTANCE_ID="$(terraform state pull 2>/dev/null | jq -r '.resources[] | select(.type=="terraform_remote_state" and .name=="platform") | .instances[0].attributes.outputs.value.rds_instance_id' 2>/dev/null || true)"
+          if [ -z "${INSTANCE_ID}" ] || [ "${INSTANCE_ID}" = "null" ]; then
+            echo "首次部署：state 无 platform 记录，跳过 RDS 唤醒（若 apply 因 RDS AutoPause 暂停失败，先确保平台 RDS Running 后重跑）"
+            exit 0
+          fi
           echo "RDS instance: ${INSTANCE_ID}"
           STATUS() { aliyun rds DescribeDBInstances --RegionId "${TF_VAR_region}" | jq -r --arg id "${INSTANCE_ID}" '.Items.DBInstance[] | select(.DBInstanceId==$id) | .DBInstanceStatus'; }
           S="$(STATUS)"
