@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.2] - 2026-08-06
+
+### Fixed
+- CI 与镜像构建链路：`quanttide-delib-toolkit` 云端补齐 `packages/go`（此前未推送，replace 目录不存在）；镜像构建上下文改为域根布局（app + toolkit 同 context，`go mod download` 可解析 replace）
+- golangci-lint 升级 v2.12.2（v1.64.x 二进制用 go1.24 构建，拒绝 go.mod 的 go 1.26），修复 errcheck 告警
+
 ## [0.1.0-alpha.1] - 2026-08-06
 
 ### Added
