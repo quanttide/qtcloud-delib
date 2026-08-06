@@ -30,7 +30,7 @@ class ResolutionDetailScreen extends StatelessWidget {
             Text(resolution.title, style: textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
-              '编号：${resolution.id}',
+              '编号：${resolution.id} · ${resolution.category}',
               style: textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.outline,
               ),

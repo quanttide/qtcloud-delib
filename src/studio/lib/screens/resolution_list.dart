@@ -17,6 +17,7 @@ class ResolutionScreen extends StatelessWidget {
       content:
           '自本周起，公司周会重大事项实行记名表决，常规事项不记名。'
           '表决结果实时统计并留痕存档，作为审计与合规依据。',
+      category: '治理',
     ),
     Resolution(
       id: '2026-W32-02',
@@ -25,6 +26,7 @@ class ResolutionScreen extends StatelessWidget {
           '审议通过《量潮科技周会审计流程章程》。'
           '会前、会中、会后三段式审计自下周起试运行，'
           '审计负责人周四完成审计报告审核，周五完成周报审核。',
+      category: '审计',
     ),
     Resolution(
       id: '2026-W31-03',
@@ -32,6 +34,7 @@ class ResolutionScreen extends StatelessWidget {
       content:
           '议事档案以议题为单位，按年份+周次组织，归档后标注时间确保可追溯。'
           '由书记处轮值书记负责整理汇总，每周一开始、周五提交。',
+      category: '档案',
     ),
     Resolution(
       id: '2026-W31-04',
@@ -39,6 +42,7 @@ class ResolutionScreen extends StatelessWidget {
       content:
           '周报只可引用已提交到工作档案、工作章程、工作手册的资料，'
           '不可引用原始汇报文档与原始议事文档。',
+      category: '规范',
     ),
   ];
 

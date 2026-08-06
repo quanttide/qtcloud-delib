@@ -36,7 +36,7 @@ void main() {
 
     expect(find.byType(ResolutionDetailScreen), findsOneWidget);
     expect(find.text('决议详情'), findsOneWidget);
-    expect(find.text('编号：2026-W32-01'), findsOneWidget);
+    expect(find.text('编号：2026-W32-01 · 治理'), findsOneWidget);
     expect(find.textContaining('记名表决'), findsWidgets);
   });
 }
