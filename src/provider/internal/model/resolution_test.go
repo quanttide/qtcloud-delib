@@ -5,6 +5,7 @@ import "testing"
 func TestResolution(t *testing.T) {
 	r := Resolution{
 		ID:       "5914902c-1d03-496d-8f56-d3f627c17caf",
+		Name:     "weekly-vote",
 		Title:    "周会实行记名表决制",
 		Content:  "重大事项记名表决，常规事项不记名，结果留痕存档。",
 		Category: "治理",
@@ -12,6 +13,9 @@ func TestResolution(t *testing.T) {
 
 	if r.ID != "5914902c-1d03-496d-8f56-d3f627c17caf" {
 		t.Errorf("ID = %q, want %q", r.ID, "5914902c-1d03-496d-8f56-d3f627c17caf")
+	}
+	if r.Name != "weekly-vote" {
+		t.Errorf("Name = %q, want %q", r.Name, "weekly-vote")
 	}
 	if r.Title != "周会实行记名表决制" {
 		t.Errorf("Title = %q, want %q", r.Title, "周会实行记名表决制")
