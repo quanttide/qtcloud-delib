@@ -25,7 +25,7 @@
 ## 运行
 
 ```sh
-# 本地（SQLite，库文件 qtcloud-delib.db）
+# 本地（SQLite，库文件 data/qtcloud-delib.db）
 make run
 
 # Docker 一键起（SQLite 挂载 ./data）

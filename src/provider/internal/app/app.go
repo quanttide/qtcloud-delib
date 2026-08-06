@@ -50,7 +50,8 @@ func OpenDB() (*gorm.DB, error) {
 	}
 	dsn := os.Getenv("DB_SQLITE_DSN")
 	if dsn == "" {
-		dsn = "qtcloud-delib.db"
+		// data/ 目录存放本地 SQLite 文件库（.gitignore 忽略），与 Docker 挂载路径 /data 对齐
+		dsn = "data/qtcloud-delib.db"
 	}
 	return Open("sqlite", dsn)
 }
