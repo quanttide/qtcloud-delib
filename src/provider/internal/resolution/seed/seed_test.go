@@ -29,11 +29,11 @@ func fakeRepo(t *testing.T) (apiURL, rawBase string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/contents", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"name":"data-contract.json"},{"name":"institutionalization.json"},{"name":"notes.txt"}]`)
+		_, _ = fmt.Fprint(w, `[{"name":"data-contract.json"},{"name":"institutionalization.json"},{"name":"notes.txt"}]`)
 	})
 	mux.HandleFunc("/raw/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, specimen)
+		_, _ = fmt.Fprint(w, specimen)
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)

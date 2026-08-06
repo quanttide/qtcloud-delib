@@ -56,7 +56,8 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.64.8
+          # v2：v1.64.x 用 go1.24 构建，低于 go.mod 的 go 1.26 会拒绝运行
+          version: v2.12.2
           working-directory: apps/qtcloud-delib/src/provider
 
   terraform:
