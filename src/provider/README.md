@@ -6,45 +6,52 @@
 
 | 包 | 说明 |
 |---|------|
-| [`cmd/server`](./cmd/server/) | 服务入口：装配存储、处理器、路由与启动 |
-| [`internal/model`](./internal/model/) | 领域模型：`Resolution` |
-| [`internal/api`](./internal/api/)  | HTTP 端点：决议清单、创建决议、统一响应 |
-| [`internal/store`](./internal/store/) | 存储抽象：`Storer` 接口与内存实现 |
-| [`internal/app`](./internal/app/) | 应用层装配（预留） |
+| [`cmd/server`](./cmd/server/) | 服务入口：装配数据库、路由与启动（优雅关闭） |
+| [`cmd/seed`](./cmd/seed/) | 种子数据导入入口（云端 GitHub 拉取） |
+| [`internal/resolution`](./internal/resolution/) | 决议领域：模型、Repository 接口、Service、transport（含 `gorm/` 实现与 `seed/`） |
+| [`internal/app`](./internal/app/) | 应用装配：`Open`/`OpenDB`（方言切换 + AutoMigrate）、`BuildMux`（依赖注入） |
+| [`internal/httpserver`](./internal/httpserver/) | 统一 JSON 响应工具 |
+| [`internal/store`](./internal/store/) | 存储测试替身（MVP 遗留，不演进为生产存储） |
 
-## model — 数据模型
+## 决议领域
 
-| 类型 | 字段 |
+| 组件 | 说明 |
 |------|------|
-| `Resolution` | `id`, `title`, `description` |
+| 模型 | `Resolution`：`id`（UUID）/ `name`（slug，业务唯一键）/ `title` / `content` / `category` |
+| 存储 | Repository 接口 + GORM 实现（开发 SQLite / 生产 PostgreSQL 方言切换） |
+| 服务 | `Create`（UUID 生成、name/title 校验）、`List`（按 name 排序） |
+| HTTP | `GET /resolutions`、`POST /resolutions`（经 `Handler.Register(mux)` 注册） |
 
-决议是决策记录：`title` 概括"决定了什么"，`description` 展开决议陈述。
+## 运行
 
-## api — HTTP 端点
+```sh
+# 本地（SQLite，库文件 qtcloud-delib.db）
+make run
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/resolutions` | 决议清单 |
-| POST | `/resolutions` | 创建决议 |
+# Docker 一键起（SQLite 挂载 ./data）
+make docker-up
 
-## Storer 接口
+# 种子数据：导入 profile 决议标本（云端 GitHub 拉取，幂等）
+go run ./cmd/seed
 
-```go
-type Storer interface {
-    List(collection string) ([]byte, error)
-    Create(collection string, data []byte) (string, error)
-    Get(collection string, id string) ([]byte, error)
-    Update(collection string, id string, data []byte) error
-}
+# 构建与测试
+make build
+make test && make vet
 ```
 
-`ResolutionHandler` 依赖 `Storer` 接口实现持久化，可对接任意存储后端（内存、文件、数据库等）。
+配置经环境变量注入：`DB_DRIVER`（sqlite/postgres）、`DATABASE_URL`、`DB_SQLITE_DSN`、`LISTEN_ADDR`。
 
 ## 模块路径
 
 ```
 github.com/quanttide/qtcloud-delib-provider
 ```
+
+工具库经 go.mod `replace` 引用 `quanttide-delib-toolkit`（标本模型，seed 解析用）。
+
+## 部署
+
+生产部署走阿里云 FC 3.0 custom-container + RDS Serverless（PostgreSQL），IaC 见 [`manifests/terraform`](../../../manifests/terraform/)（app 级，对齐 qtcloud-pay）。
 
 ## 许可
 

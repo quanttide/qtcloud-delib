@@ -4,6 +4,7 @@ go 1.26
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/quanttide/quanttide-delib-toolkit/packages/go v0.0.0-00010101000000-000000000000
 	gorm.io/driver/postgres v1.6.2
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
@@ -20,3 +21,5 @@ require (
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/quanttide/quanttide-delib-toolkit/packages/go => ../../../../packages/quanttide-delib-toolkit/packages/go
