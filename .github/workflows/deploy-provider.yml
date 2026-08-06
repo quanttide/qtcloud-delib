@@ -129,7 +129,6 @@ jobs:
       ALICLOUD_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
       ALICLOUD_REGION_ID: cn-hangzhou
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-      TF_VAR_seed_token: ${{ secrets.SEED_TOKEN }}
 
     steps:
       - name: Checkout
@@ -217,14 +216,4 @@ jobs:
         working-directory: manifests/terraform
         run: terraform apply -input=false -no-color tfplan
 
-      # 生产种子数据：apply 后经 FC 端点导入（FC 在 VPC 内可连 RDS；runner 直连会被白名单拒绝）
-      - name: Seed Resolutions
-        working-directory: manifests/terraform
-        run: |
-          URL="$(terraform output -raw fc_http_url)"
-          echo "FC URL: ${URL}"
-          curl -sS -f -X POST "${URL}/seed" \
-            -H "X-Seed-Token: ${SEED_TOKEN}" \
-            -w "\nseed response: %{http_code}\n"
-        env:
-          SEED_TOKEN: ${{ secrets.SEED_TOKEN }}
+      # 生产种子数据：不自动导入——部署成功后手动上传（本地开发用 cmd/seed）

@@ -51,7 +51,7 @@ GORM 实现位于 `gorm/`（开发 SQLite / 生产 PostgreSQL，方言由 `app.O
 
 ## 种子数据
 
-`seed` 子包从云端 GitHub（raw）拉取 profile 决议标本（`resolutions/*.json`）幂等导入：按 `name` 跳过已存在。数据源默认：
+`seed` 子包从云端 GitHub（raw）拉取 profile 决议标本（`resolutions/*.json`）幂等导入：按 `name` 已存在则同步更新（title/content/category，ID 不变），不存在则新增。数据源默认：
 
 - 清单：GitHub contents API（`quanttide-profile-of-deliberation/resolutions` 目录）
 - 内容：`raw.githubusercontent.com` 对应目录的 JSON 文件
