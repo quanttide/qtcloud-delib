@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.3] - 2026-08-06
+
+### Fixed
+- deploy 首次部署：本地 state 无 platform 记录时跳过 RDS 唤醒（此前 INSTANCE_ID 为空导致 StartDBInstance 报 MissingParameter，apply 无法执行）
+
 ## [0.1.0-alpha.2] - 2026-08-06
 
 ### Fixed
