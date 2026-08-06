@@ -15,8 +15,16 @@
 
 - **系统级共享**（quanttide 体系统一管理，`quanttide-<env>` 命名）：VPC / 交换机 / 安全组、RDS 实例
 - **应用级**（`qtcloud-delib-<env>` 命名）：数据库与账号（`qtcloud_delib`，DBOwner）、FC 函数与默认角色
+- **静态网站**（studio 客户端）：OSS 桶 `qtcloud-delib-studio`（静态托管 + 公共读，`studio.tf`）；CDN 域名 `delib.cloud.quanttide.com` 与 DNS/证书在控制台配置（无组织级 CDN IaC 先例，对齐 qtdata-studio 模式，见 quanttide-platform `docs/dev-guide/iac/websites.md`）
 - **不含** API 网关、域名、DNS（系统层面预留）
 
+## studio 静态网站部署
+
+- 基础设施：`terraform apply`（`studio.tf`：桶 + 静态托管 + 公共读；注意首次需关闭该桶"阻止公共访问"，见 issue 记录）
+- 构建上传：`.github/workflows/deploy-studio.yml`（Release `studio/*` 触发 → flutter build web → ossutil cp → 刷新 CDN）
+- 证书：acme.sh 泛域名证书（`scripts/deploy-studio-cert.py` 绑定 CDN，续期后重跑）
+
+## 使用
 ## 安全说明
 
 - **鉴权**：决议 API 维持无认证（已确认决策），生产接入 API 网关时再评估
