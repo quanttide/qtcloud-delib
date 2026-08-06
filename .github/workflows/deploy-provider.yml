@@ -26,13 +26,6 @@ on:
   push:
     tags:
       - 'provider/**'
-  # 手动触发（重跑部署/导入种子数据，镜像 tag 默认 main）
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 镜像 tag（默认 main，即当前 main 构建）
-        required: false
-        default: main
 
 concurrency:
   group: deploy-provider
@@ -66,15 +59,11 @@ jobs:
           repository: quanttide/quanttide-delib-toolkit
           path: packages/quanttide-delib-toolkit
 
-      # tag provider/v0.1.0 → 镜像 tag v0.1.0；workflow_dispatch → 输入 tag（默认 main）
+      # tag provider/v0.1.0 → 镜像 tag v0.1.0（仅 tag 触发）
       - name: Resolve Image Tag
         id: image
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.image_tag }}"
-          else
-            TAG="${GITHUB_REF_NAME#provider/}"
-          fi
+          TAG="${GITHUB_REF_NAME#provider/}"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
@@ -137,11 +126,7 @@ jobs:
       # 部署镜像固定指向 ACR（FC 中国区拉不到 Docker Hub）；仅写入 GITHUB_ENV，不进 job output
       - name: Resolve Image Name
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.image_tag }}"
-          else
-            TAG="${GITHUB_REF_NAME#provider/}"
-          fi
+          TAG="${GITHUB_REF_NAME#provider/}"
           echo "TF_VAR_image=${{ secrets.ALIYUN_ACR_REGISTRY }}/${ACR_NAMESPACE}/qtcloud-delib-provider:${TAG}" >> "$GITHUB_ENV"
 
       - name: Setup Terraform
