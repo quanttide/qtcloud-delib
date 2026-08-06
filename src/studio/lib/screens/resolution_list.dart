@@ -221,10 +221,37 @@ class _ResolutionScreenState extends State<ResolutionScreen> {
                 return ListTile(
                   leading: const Icon(Icons.gavel),
                   title: Text(resolution.title),
-                  subtitle: Text(
-                    resolution.content,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Wrap(
+                      spacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (resolution.category.isNotEmpty)
+                          Chip(
+                            label: Text(resolution.category),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            labelStyle: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                            side: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        Text(
+                          resolution.name,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showDetail(context, resolution),
