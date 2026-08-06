@@ -39,7 +39,7 @@ dependencies:
   http: ^1.2.0
 
   # Markdown 渲染：决议陈述（content）为 Markdown 格式（种子标本）
-  flutter_markdown: ^0.7.4
+  flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,7 @@
 // 展示决议的完整陈述（content，Markdown 渲染），由决议列表右侧弹窗打开。
 
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import '../models/resolution.dart';
 
