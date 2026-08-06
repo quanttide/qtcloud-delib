@@ -55,6 +55,7 @@ resource "alicloud_fcv3_function" "this" {
   environment_variables = {
     DB_DRIVER    = "postgres"
     DATABASE_URL = "postgres://${alicloud_db_account.this.account_name}:${var.db_password}@${data.terraform_remote_state.platform.outputs.rds_connection_string}:${data.terraform_remote_state.platform.outputs.rds_port}/${alicloud_db_database.this.data_base_name}?sslmode=disable"
+    SEED_TOKEN   = var.seed_token
   }
 
   tags = {

@@ -34,6 +34,13 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "seed_token" {
+  description = "种子导入端点鉴权 token（POST /seed 的 X-Seed-Token，经 CI secret 注入）"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "image" {
   description = "FC 容器镜像。由 CI 注入（TF_VAR_image 拼接 secret ALIYUN_ACR_REGISTRY 的实例地址）或 terraform.tfvars 提供；实例地址属敏感信息不写默认值"
   type        = string

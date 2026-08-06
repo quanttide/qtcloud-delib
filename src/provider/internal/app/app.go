@@ -12,6 +12,7 @@ import (
 
 	"github.com/quanttide/qtcloud-delib-provider/internal/resolution"
 	resolutiongorm "github.com/quanttide/qtcloud-delib-provider/internal/resolution/gorm"
+	"github.com/quanttide/qtcloud-delib-provider/internal/resolution/seed"
 )
 
 // Open 打开数据库并迁移全部模型（driver: sqlite/postgres，dsn 对应驱动格式）。
@@ -62,5 +63,7 @@ func BuildMux(db *gorm.DB) (*http.ServeMux, error) {
 
 	mux := http.NewServeMux()
 	resolution.NewHandler(svc).Register(mux)
+	// 种子导入端点（配置 SEED_TOKEN 时挂载，供生产环境导入云端标本）
+	seed.Register(mux, db, os.Getenv("SEED_TOKEN"), seed.DefaultAPIURL, seed.DefaultRawBaseURL)
 	return mux, nil
 }
