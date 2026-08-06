@@ -56,6 +56,7 @@
 | E2 | P3 | go.mod 通过 replace 引用 `quanttide-delib-toolkit`（对齐 pay） | `src/provider/go.mod` | 已完成 |
 | E3 | P3 | AGENTS.md / CONTRIBUTING.md（对齐 pay 工程约定） | `src/provider/` | 已完成 |
 | E4 | P3 | 种子数据：导入 profile 决议标本（云端 GitHub raw 拉取，避免本地子模块路径依赖） | `internal/resolution/seed` | 已完成 |
+| E5 | P3 | CI：GitHub Actions——`ci.yml`（test/vet/fmt/lint + terraform fmt/validate，按域仓库布局补齐 toolkit replace 依赖）+ `deploy-provider.yml`（tag `provider/**`：镜像双通道发布 + Terraform apply，对齐 pay） | `.github/workflows/` | 已完成 |
 
 ## 已确认决策
 

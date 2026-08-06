@@ -53,6 +53,11 @@ github.com/quanttide/qtcloud-delib-provider
 
 生产部署走阿里云 FC 3.0 custom-container + RDS Serverless（PostgreSQL），IaC 见 [`manifests/terraform`](../../../manifests/terraform/)（app 级，对齐 qtcloud-pay）。
 
+CI（`.github/workflows/`）：
+
+- `ci.yml`：push main / PR 触发，provider 单测/静态检查/格式/lint + IaC 校验
+- `deploy-provider.yml`：推送 tag `provider/*` 触发——镜像双通道发布（Docker Hub + ACR）后 Terraform apply 部署
+
 ## 许可
 
 Apache 2.0 — 见项目根目录 [LICENSE](../../../LICENSE)。

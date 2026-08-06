@@ -1,0 +1,86 @@
+# 测试 CI：provider（Go）单测、静态检查与 IaC 校验。
+#
+# 关键点：go.mod 经 replace 引用域级工具库（../../../../packages/quanttide-delib-toolkit，
+# 相对模块根上溯 4 级 = 域仓库根 packages/）。单仓库 checkout 无法满足该路径，
+# 故按域仓库布局补齐：app checkout 到 apps/qtcloud-delib，工具库 checkout 到 packages/。
+#
+# 触发：push main / PR，仅涉及 src/provider 与本 workflow 时。
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/provider/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'src/provider/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  provider:
+    name: Provider Test & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/qtcloud-delib/src/provider
+    steps:
+      # 对齐域仓库布局（apps/qtcloud-delib），使 replace 相对路径成立
+      - name: Checkout app
+        uses: actions/checkout@v4
+        with:
+          path: apps/qtcloud-delib
+
+      - name: Checkout toolkit（replace 依赖）
+        uses: actions/checkout@v4
+        with:
+          repository: quanttide/quanttide-delib-toolkit
+          path: packages/quanttide-delib-toolkit
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.8
+          working-directory: apps/qtcloud-delib/src/provider
+
+  terraform:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/qtcloud-delib/manifests/terraform
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@v4
+        with:
+          path: apps/qtcloud-delib
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.15.8' # 对齐本地环境
+
+      - name: Format check
+        run: terraform fmt -check -diff
+
+      - name: Init（-backend=false，仅取 provider）
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate -no-color

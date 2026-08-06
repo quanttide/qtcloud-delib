@@ -56,6 +56,7 @@ src/provider/
 │   └── store/              ← 测试替身（内存 ResolutionRepo，不演进为生产存储）
 ├── docs/                   ← 设计文档（index.md 导航 + resolution.md）
 ├── manifests/terraform/    ← 部署 IaC（app 级，对齐 qtcloud-pay）
+├── .github/workflows/       ← CI（ci.yml 测试 + deploy-provider.yml 部署）
 ├── go.mod / go.sum
 ├── Makefile
 ├── Dockerfile / docker-compose.yml
@@ -92,4 +93,5 @@ make docker-up
 
 - 提交信息格式：`feat(provider): ...` / `fix(provider): ...` / `docs(provider): ...` / `refactor(provider): ...` / `chore(provider): ...`
 - 提交前：`go test ./...`、`go vet ./...`、gofmt 无差异；核对 ROADMAP 相关条目状态与 CHANGELOG
+- 本地双绿（test + vet/fmt + golangci-lint）约等于 CI 绿；CI 失败后先查是 fmt 差异还是逻辑错误
 - 分层提交：子模块内提交推送 → 回到父仓库更新指针 → 提交推送（子模块独立维护，禁止在父仓库直接改子模块文件）

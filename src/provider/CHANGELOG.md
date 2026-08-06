@@ -16,6 +16,7 @@
   - 容器化：Dockerfile（多阶段 + 非 root）、docker-compose、Makefile、.dockerignore/.gitignore
   - IaC：`manifests/terraform`（阿里云 FC 3.0 + RDS Serverless，系统级资源引用 quanttide-platform）
   - 工程配套：docs（index/resolution）、go.mod replace 引用 quanttide-delib-toolkit、AGENTS.md/CONTRIBUTING.md、种子数据导入（云端 GitHub raw，幂等）
+  - CI：`ci.yml`（test/vet/fmt/lint + terraform fmt/validate）+ `deploy-provider.yml`（tag 触发：镜像 Docker Hub + ACR 双通道 + Terraform apply）
 
 ## [0.1.0] - 2026-08-04
 
