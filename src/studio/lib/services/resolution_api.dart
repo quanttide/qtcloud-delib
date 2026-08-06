@@ -5,7 +5,8 @@
 //   POST /resolutions  → 创建决议，返回创建的 Resolution（201）
 //
 // baseUrl 默认按平台推导：Android 模拟器经 10.0.2.2 访问宿主机，
-// 其余平台默认 localhost；可用 --dart-define=DELIB_API_BASE_URL=... 覆盖。
+// 其余平台默认 localhost；可用 --dart-define=QTCLOUD_DELIB_API_BASE_URL=... 覆盖
+// （部署流水线经 repo 级变量 QTCLOUD_DELIB_API_BASE_URL 注入生产地址）。
 
 import 'dart:convert';
 
@@ -37,11 +38,11 @@ class ResolutionApi {
   final String baseUrl;
 
   /// 默认服务端地址：
-  /// - `--dart-define=DELIB_API_BASE_URL=...` 显式指定（真实设备部署等场景）
+  /// - `--dart-define=QTCLOUD_DELIB_API_BASE_URL=...` 显式指定（部署/真实设备场景）
   /// - Android 模拟器经 10.0.2.2 访问宿主机
   /// - 其余平台（桌面 / iOS 模拟器 / Web）默认 localhost
   static String defaultBaseUrl() {
-    const String fromEnv = String.fromEnvironment('DELIB_API_BASE_URL');
+    const String fromEnv = String.fromEnvironment('QTCLOUD_DELIB_API_BASE_URL');
     if (fromEnv.isNotEmpty) {
       return fromEnv;
     }

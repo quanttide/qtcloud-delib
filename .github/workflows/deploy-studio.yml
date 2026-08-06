@@ -8,8 +8,10 @@
 # 触发说明：用 tag 精确匹配 studio/ 前缀，避免其他组件（provider/cli）的 Release 误触发
 # （与 deploy-provider.yml 的 push tags: provider/** 模式一致）。
 #
-# 所需 GitHub secrets（org 级）：
-#   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET：RAM 用户 AccessKey（OSS 上传 + CDN 刷新）
+# 所需 GitHub secrets / variables（org / repo 级）：
+#   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET（secret）：RAM 用户 AccessKey（OSS 上传 + CDN 刷新）
+#   - QTCLOUD_DELIB_API_BASE_URL（variable，repo 级）：生产 API 地址，构建时经 --dart-define 注入客户端
+#     （如 https://qtcloudlib-prod-eqppqgaboh.cn-hangzhou.fcapp.run）
 #
 # 前置条件（首次需人工在阿里云控制台完成）：
 #   - OSS 桶 qtcloud-delib-studio：静态网站托管模式 + 公共读
@@ -52,7 +54,8 @@ jobs:
         working-directory: src/studio
         run: |
           flutter pub get
-          flutter build web --release
+          flutter build web --release \
+            --dart-define=QTCLOUD_DELIB_API_BASE_URL=${{ vars.QTCLOUD_DELIB_API_BASE_URL }}
 
       - name: Setup ossutil
         uses: manyuanrong/setup-ossutil@v3
