@@ -23,7 +23,7 @@ func NewResolutionHandler(st *store.ResolutionStore) *ResolutionHandler {
 func (h *ResolutionHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"resolutions": []model.Resolution{
-			{ID: "2026-W32-01", Title: "周会实行记名表决制", Content: "重大事项记名表决，常规事项不记名。", Category: "治理"},
+			{ID: "5914902c-1d03-496d-8f56-d3f627c17caf", Title: "周会实行记名表决制", Content: "重大事项记名表决，常规事项不记名。", Category: "治理"},
 		},
 	})
 }

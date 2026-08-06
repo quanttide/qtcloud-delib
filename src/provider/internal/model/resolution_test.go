@@ -4,14 +4,14 @@ import "testing"
 
 func TestResolution(t *testing.T) {
 	r := Resolution{
-		ID:       "2026-W32-01",
+		ID:       "5914902c-1d03-496d-8f56-d3f627c17caf",
 		Title:    "周会实行记名表决制",
 		Content:  "重大事项记名表决，常规事项不记名，结果留痕存档。",
 		Category: "治理",
 	}
 
-	if r.ID != "2026-W32-01" {
-		t.Errorf("ID = %q, want %q", r.ID, "2026-W32-01")
+	if r.ID != "5914902c-1d03-496d-8f56-d3f627c17caf" {
+		t.Errorf("ID = %q, want %q", r.ID, "5914902c-1d03-496d-8f56-d3f627c17caf")
 	}
 	if r.Title != "周会实行记名表决制" {
 		t.Errorf("Title = %q, want %q", r.Title, "周会实行记名表决制")
