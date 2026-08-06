@@ -19,7 +19,7 @@
 |---|--------|------|------|------|
 | D1 | P0 | 引入 GORM + postgres/sqlite 驱动（开发 SQLite / 生产 PostgreSQL 方言切换） | `go.mod`：`gorm.io/gorm`、`gorm.io/driver/postgres`、`gorm.io/driver/sqlite` | 未开始 |
 | D2 | P0 | `model.Resolution` 补 gorm tag（primaryKey、comment 等） | `internal/resolution/model.go` | 未开始 |
-| D3 | P0 | 存储重构为 Repository 模式：接口 + gorm 实现（方法以 `*gorm.DB` 为首参，事务由调用方编排） | `internal/resolution/repository.go`、`internal/resolution/gorm/resolution_repo.go`；删除 `internal/store` | 未开始 |
+| D3 | P0 | 存储重构为 Repository 模式：接口 + gorm 实现（方法以 `*gorm.DB` 为首参，事务由调用方编排）；`internal/store` 保留为测试替身 | `internal/resolution/repository.go`、`internal/resolution/gorm/resolution_repo.go` | 未开始 |
 | D4 | P0 | `app.Open(driver, dsn)`：方言切换 + `AutoMigrate` + SQLite 单连接限制；`OpenDB()` 读 `DB_DRIVER` / `DATABASE_URL` / `DB_SQLITE_DSN` | `internal/app/app.go` | 未开始 |
 
 ### P1 分层重构：按领域分包
@@ -55,9 +55,10 @@
 | E1 | P3 | 决议领域 API 文档 | `src/provider/docs/index.md`、`docs/resolution.md` | 未开始 |
 | E2 | P3 | go.mod 通过 replace 引用 `quanttide-delib-toolkit`（对齐 pay） | `src/provider/go.mod` | 未开始 |
 | E3 | P3 | AGENTS.md / CONTRIBUTING.md（对齐 pay 工程约定） | `src/provider/` | 未开始 |
+| E4 | P3 | 种子数据：导入 profile 决议标本（云端 GitHub raw 拉取，避免本地子模块路径依赖） | `internal/resolution/seed` | 未开始 |
 
-## 待定决策
+## 已确认决策
 
-- **鉴权方案**：决议 API 当前无认证；生产前须确定应用层鉴权（对齐 pay F1：网关接入前先应用层鉴权），影响 BuildMux 挂载中间件
-- **迁移路径**：MemoryStore → GORM 切换时，`internal/store` 是删除还是保留为测试替身（决定 D3 删留）
-- **决议数据来源**：profile 决议标本（`data/profile/resolutions/*.json`）是否作为 provider 种子数据导入（决定是否加 seed 逻辑）
+- **鉴权方案**：暂时不加应用层鉴权（决议 API 维持无认证），生产接入 API 网关时再评估
+- **迁移路径**：MemoryStore 保留为测试替身，不删除
+- **决议数据来源**：profile 决议标本作为种子数据导入，通过云端 GitHub（raw 拉取）连接，避免本地子模块导致目录异常
