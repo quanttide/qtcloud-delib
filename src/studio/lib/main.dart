@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/resolution_list.dart';
 import 'screens/topic_list.dart';
-import 'services/resolution_api.dart';
+import 'services/resolution_store.dart';
 
 void main() {
   runApp(const DelibApp());
@@ -31,10 +31,10 @@ class DelibApp extends StatelessWidget {
 // 可用 LayoutBuilder 在窄屏降级为 Drawer。
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key, this.api});
+  const MainShell({super.key, this.store});
 
-  /// 决议 API 客户端（测试可注入替身，默认对接真实服务端）
-  final ResolutionApi? api;
+  /// 决议数据源（测试可注入替身，默认本地标本）
+  final ResolutionStore? store;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -45,7 +45,7 @@ class _MainShellState extends State<MainShell> {
 
   late final List<Widget> _pages = [
     const TopicScreen(),
-    ResolutionScreen(api: widget.api),
+    ResolutionScreen(store: widget.store),
   ];
 
   @override

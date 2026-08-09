@@ -1,31 +1,33 @@
 // 决议管理页面
 //
-// 决议清单：从服务端（provider）加载决议记录（title），
-// 点击列表项从右侧弹窗显示详情；支持下拉刷新与新建决议。
+// 决议清单：从本地内置数据源（profile 决议标本，assets/data/*.json）加载，
+// 前后端解耦、离线可用；点击列表项从右侧弹窗显示详情，支持下拉刷新。
+// （服务端 API 代码保留于 services/resolution_api.dart，未来恢复时切换注入）
 
 import 'package:flutter/material.dart';
 
 import '../models/resolution.dart';
-import '../services/resolution_api.dart';
+import '../services/resolution_store.dart';
 import 'resolution_detail.dart';
 
 class ResolutionScreen extends StatefulWidget {
-  const ResolutionScreen({super.key, this.api});
+  const ResolutionScreen({super.key, this.store});
 
-  /// 决议 API 客户端（测试可注入替身，默认对接真实服务端）
-  final ResolutionApi? api;
+  /// 决议数据源（测试可注入替身，默认本地标本）
+  final ResolutionStore? store;
 
   @override
   State<ResolutionScreen> createState() => _ResolutionScreenState();
 }
 
 class _ResolutionScreenState extends State<ResolutionScreen> {
-  late final ResolutionApi _api = widget.api ?? ResolutionApi();
-  late Future<List<Resolution>> _future = _api.fetchResolutions();
+  late final ResolutionStore _store =
+      widget.store ?? const AssetResolutionStore();
+  late Future<List<Resolution>> _future = _store.fetchResolutions();
 
   void _reload() {
     setState(() {
-      _future = _api.fetchResolutions();
+      _future = _store.fetchResolutions();
     });
   }
 
@@ -61,132 +63,10 @@ class _ResolutionScreenState extends State<ResolutionScreen> {
     );
   }
 
-  /// 新建决议：弹窗收集表单并提交服务端，成功后刷新列表
-  Future<void> _createResolution() async {
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController contentController = TextEditingController();
-    final TextEditingController categoryController = TextEditingController();
-
-    final bool? submitted = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新建决议'),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: titleController,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: '标题 *',
-                    hintText: '决定了什么（如：周会实行记名表决制）',
-                  ),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? '请输入标题' : null,
-                ),
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: '标识（slug）',
-                    hintText: '留空则由标题生成（如 weekly-vote）',
-                  ),
-                ),
-                TextFormField(
-                  controller: categoryController,
-                  decoration: const InputDecoration(
-                    labelText: '分类',
-                    hintText: '如：治理、审计、档案、技术',
-                  ),
-                ),
-                TextFormField(
-                  controller: contentController,
-                  decoration: const InputDecoration(
-                    labelText: '陈述',
-                    hintText: '决议陈述：依据、表决情况、执行安排等',
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(context, true);
-              }
-            },
-            child: const Text('提交'),
-          ),
-        ],
-      ),
-    );
-    if (submitted != true || !mounted) {
-      return;
-    }
-
-    final String title = titleController.text.trim();
-    String name = nameController.text.trim();
-    if (name.isEmpty) {
-      name = _slugify(title);
-    }
-    try {
-      await _api.createResolution(
-        name: name,
-        title: title,
-        content: contentController.text.trim(),
-        category: categoryController.text.trim(),
-      );
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('决议已创建')));
-      _reload();
-    } on ResolutionApiException catch (e) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('创建失败：${e.message}')));
-    }
-  }
-
-  /// 标题转 slug：小写、去标点、空白转连字符
-  static String _slugify(String title) {
-    final String normalized = title
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^\p{L}\p{N}\s-]', unicode: true), '')
-        .trim()
-        .replaceAll(RegExp(r'\s+'), '-');
-    return normalized.isEmpty ? 'resolution' : normalized;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('决议管理'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: '新建决议',
-            onPressed: _createResolution,
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('决议管理')),
       body: FutureBuilder<List<Resolution>>(
         future: _future,
         builder: (context, snapshot) {
@@ -201,11 +81,11 @@ class _ResolutionScreenState extends State<ResolutionScreen> {
           }
           final List<Resolution> resolutions = snapshot.data ?? [];
           if (resolutions.isEmpty) {
-            return const Center(child: Text('暂无决议，点击右上角新建'));
+            return const Center(child: Text('暂无决议'));
           }
           return RefreshIndicator(
             onRefresh: () async {
-              final Future<List<Resolution>> future = _api.fetchResolutions();
+              final Future<List<Resolution>> future = _store.fetchResolutions();
               setState(() {
                 _future = future;
               });
