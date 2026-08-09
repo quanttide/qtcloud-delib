@@ -64,9 +64,18 @@ jobs:
           access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
           access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      # 长缓存：Flutter 产物文件名含内容哈希，可放心 max-age=31536000
-      - name: Upload to OSS
+      # 缓存策略分离（Flutter Web 部署要点）：
+      # - 入口文件（index.html / bootstrap / service worker / manifest）必须 no-cache，
+      #   否则浏览器与 SW 缓存旧入口，发布后用户永远看到旧版本
+      # - 其余产物（main.dart.js / assets 哈希文件）可长缓存
+      - name: Upload to OSS（产物长缓存）
         run: ossutil cp src/studio/build/web/ oss://${{ env.OSS_BUCKET }}/ -r -f --meta=Cache-Control:public,max-age=31536000
+
+      - name: Upload to OSS（入口文件 no-cache）
+        run: |
+          for f in index.html flutter_bootstrap.js flutter_service_worker.js manifest.json favicon.png; do
+            ossutil cp "src/studio/build/web/$f" "oss://${{ env.OSS_BUCKET }}/$f" -f --meta=Cache-Control:no-cache
+          done
 
       - name: Refresh CDN
         run: |
