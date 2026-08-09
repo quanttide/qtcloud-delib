@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.5] - 2026-08-09
+
+### Fixed
+- 撤销误发的 beta.4（并行会话基于旧 base 构建，覆盖了缓存策略修复）：
+  本版基于最新 main（AssetResolutionStore 前后端解耦 + 入口 no-cache 缓存策略），
+  重新部署恢复正确状态
+
 ## [0.1.0-beta.3] - 2026-08-09
 
 ### Fixed
