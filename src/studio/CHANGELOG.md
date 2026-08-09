@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.2] - 2026-08-06
+
+### Changed
+- **前后端解耦**：客户端内置 profile 决议标本（assets/data/*.json），离线可用，
+  不依赖服务端 API（ResolutionStore 抽象 + AssetResolutionStore 实现；
+  服务端对接代码 ResolutionApi 保留，未来恢复即切换注入）
+- 移除新建决议入口（本地标本只读）
+- 部署流水线移除 API 地址注入，前端独立迭代发布
+
 ## [0.1.0-beta.1] - 2026-08-06
 
 首个 beta：功能与 alpha.2 一致（侧边导航 / Markdown 渲染 / 生产 API 注入），
