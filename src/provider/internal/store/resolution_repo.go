@@ -61,4 +61,12 @@ func (r *ResolutionRepo) UpdateByName(db *gorm.DB, name string, res *resolution.
 	return nil
 }
 
+func (r *ResolutionRepo) DeleteByName(db *gorm.DB, name string) error {
+	if _, ok := r.items[name]; !ok {
+		return gorm.ErrRecordNotFound
+	}
+	delete(r.items, name)
+	return nil
+}
+
 var _ resolution.Repository = (*ResolutionRepo)(nil)

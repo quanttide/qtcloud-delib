@@ -15,6 +15,9 @@ var ErrInvalidInput = errors.New("resolution: invalid input")
 // ErrDuplicateName name（slug）已存在，唯一索引冲突。
 var ErrDuplicateName = errors.New("resolution: duplicate name")
 
+// ErrNotFound 决议不存在。
+var ErrNotFound = errors.New("resolution: not found")
+
 // Service 决议服务：业务规则与用例编排。
 type Service struct {
 	db   *gorm.DB
@@ -51,4 +54,19 @@ func (s *Service) Create(ctx context.Context, r *Resolution) (*Resolution, error
 		return nil, err
 	}
 	return r, nil
+}
+
+// Delete 删除决议（按 name/slug）；不存在返回 ErrNotFound。
+func (s *Service) Delete(ctx context.Context, name string) error {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ErrInvalidInput
+	}
+	if _, err := s.repo.GetByName(s.db, name); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.repo.DeleteByName(s.db, name)
 }

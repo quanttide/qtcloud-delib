@@ -14,4 +14,6 @@ type Repository interface {
 	Create(db *gorm.DB, r *Resolution) error
 	// UpdateByName 按 name（slug）更新 title/content/category（ID 不变）。
 	UpdateByName(db *gorm.DB, name string, r *Resolution) error
+	// DeleteByName 按 name（slug）删除决议。
+	DeleteByName(db *gorm.DB, name string) error
 }

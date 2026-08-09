@@ -51,4 +51,8 @@ func (r *ResolutionRepo) UpdateByName(db *gorm.DB, name string, res *resolution.
 	}).Error
 }
 
+func (r *ResolutionRepo) DeleteByName(db *gorm.DB, name string) error {
+	return db.Where("name = ?", name).Delete(&resolution.Resolution{}).Error
+}
+
 var _ resolution.Repository = (*ResolutionRepo)(nil)

@@ -22,6 +22,7 @@ func NewHandler(svc *Service) *Handler {
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /resolutions", h.handleList)
 	mux.HandleFunc("POST /resolutions", h.handleCreate)
+	mux.HandleFunc("DELETE /resolutions/{name}", h.handleDelete)
 }
 
 // handleList 决议清单：GET /resolutions
@@ -54,4 +55,21 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpserver.WriteJSON(w, http.StatusCreated, created)
+}
+
+// handleDelete 删除决议：DELETE /resolutions/{name}
+func (h *Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if err := h.svc.Delete(r.Context(), name); err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidInput):
+			httpserver.WriteError(w, http.StatusBadRequest, "name is required")
+		case errors.Is(err, ErrNotFound):
+			httpserver.WriteError(w, http.StatusNotFound, "resolution not found")
+		default:
+			httpserver.WriteError(w, http.StatusInternalServerError, "delete failed")
+		}
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
