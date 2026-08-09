@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.3] - 2026-08-09
+
+### Fixed
+- 部署缓存策略：入口文件（index.html / bootstrap / service worker / manifest）
+  no-cache，仅哈希产物长缓存——修复发布后浏览器/Service Worker 缓存旧入口
+  导致看不到新版本的问题
+
 ## [0.1.0-beta.2] - 2026-08-06
 
 ### Changed
