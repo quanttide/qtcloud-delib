@@ -10,10 +10,28 @@ import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 
 import '../models/resolution.dart';
 
+/// 数据源异常。
+class ResolutionStoreException implements Exception {
+  const ResolutionStoreException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 /// 决议数据源抽象：UI 只依赖此接口。
 abstract class ResolutionStore {
   /// 决议清单（按 name 排序，与标本文件一致）
   Future<List<Resolution>> fetchResolutions();
+
+  /// 创建决议（本地标本只读，抛 [ResolutionStoreException]）。
+  Future<Resolution> createResolution({
+    required String name,
+    required String title,
+    String content = '',
+    String category = '',
+  });
 }
 
 /// 本地标本数据源：读取打包进客户端的 profile 决议标本。
@@ -23,6 +41,16 @@ class AssetResolutionStore implements ResolutionStore {
   const AssetResolutionStore();
 
   static const String _assetDir = 'assets/data';
+
+  @override
+  Future<Resolution> createResolution({
+    required String name,
+    required String title,
+    String content = '',
+    String category = '',
+  }) {
+    throw const ResolutionStoreException('本地标本只读，请登录后创建');
+  }
 
   @override
   Future<List<Resolution>> fetchResolutions() async {

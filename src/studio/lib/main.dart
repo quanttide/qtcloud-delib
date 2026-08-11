@@ -2,8 +2,11 @@
 
 import 'package:flutter/material.dart';
 
+import 'screens/login_screen.dart';
 import 'screens/resolution_list.dart';
 import 'screens/topic_list.dart';
+import 'services/api_resolution_store.dart';
+import 'services/auth_service.dart';
 import 'services/resolution_store.dart';
 
 void main() {
@@ -20,8 +23,67 @@ class DelibApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       ),
-      home: const MainShell(),
+      home: const AuthGate(),
     );
+  }
+}
+
+// 登录门禁：未登录显示登录页；登录后进入主框架（数据源切 ApiResolutionStore）。
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  final AuthService _auth = AuthService();
+  ResolutionStore? _store; // 非空 = 已登录（ApiResolutionStore）
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreSession();
+  }
+
+  Future<void> _restoreSession() async {
+    final token = await _auth.storedToken();
+    if (token != null && token.isNotEmpty) {
+      setState(() {
+        _store = ApiResolutionStore(
+          baseUrl: _apiBaseUrl(),
+          token: token,
+        );
+      });
+    }
+  }
+
+  /// 议事云 API 地址：与登录地址同网关（QTCLOUD_DELIB_API_BASE_URL 注入生产网关）。
+  static String _apiBaseUrl() {
+    const String fromEnv = String.fromEnvironment('QTCLOUD_DELIB_API_BASE_URL');
+    if (fromEnv.isNotEmpty) {
+      return fromEnv;
+    }
+    return 'http://localhost:8080';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_store == null) {
+      return LoginScreen(
+        auth: _auth,
+        onSuccess: () async {
+          final token = await _auth.storedToken();
+          setState(() {
+            _store = ApiResolutionStore(
+              baseUrl: _apiBaseUrl(),
+              token: token ?? '',
+            );
+          });
+        },
+      );
+    }
+    return MainShell(store: _store);
   }
 }
 

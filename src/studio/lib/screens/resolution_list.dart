@@ -31,6 +31,55 @@ class _ResolutionScreenState extends State<ResolutionScreen> {
     });
   }
 
+  /// 新建决议对话框（登录态下写入后端；本地标本只读会提示）。
+  Future<void> _showCreate() async {
+    final name = TextEditingController();
+    final title = TextEditingController();
+    final content = TextEditingController();
+    final category = TextEditingController();
+    final String? result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('新建决议'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: name, decoration: const InputDecoration(labelText: '名称（slug）')),
+              TextField(controller: title, decoration: const InputDecoration(labelText: '标题')),
+              TextField(controller: content, decoration: const InputDecoration(labelText: '内容'), maxLines: 3),
+              TextField(controller: category, decoration: const InputDecoration(labelText: '分类')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(context, 'ok'), child: const Text('提交')),
+        ],
+      ),
+    );
+    if (result != 'ok' || title.text.trim().isEmpty) {
+      return;
+    }
+    try {
+      await _store.createResolution(
+        name: name.text.trim().isEmpty ? _slugify(title.text) : name.text.trim(),
+        title: title.text.trim(),
+        content: content.text,
+        category: category.text.trim(),
+      );
+      _reload();
+    } on ResolutionStoreException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+  }
+
+  static String _slugify(String title) {
+    return title.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+  }
+
   /// 点击列表项，从右侧弹窗显示决议详情
   void _showDetail(BuildContext context, Resolution resolution) {
     showGeneralDialog<void>(
@@ -67,6 +116,11 @@ class _ResolutionScreenState extends State<ResolutionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('决议管理')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreate,
+        tooltip: '新建决议',
+        child: const Icon(Icons.add),
+      ),
       body: FutureBuilder<List<Resolution>>(
         future: _future,
         builder: (context, snapshot) {

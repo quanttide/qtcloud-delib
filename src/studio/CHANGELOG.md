@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-08-11
+
+### Added
+- **绑定账号系统**（qtcloud-auth 统一认证）：登录页 + JWT 本地存储 + 请求带 Authorization
+- 数据源切换：登录后经网关读后端决议（ApiResolutionStore）；未登录显示登录页
+- 恢复新建决议入口（登录态写入后端，只读数据源提示）
+
+### Changed
+- 认证服务地址经 `--dart-define=QTCLOUD_AUTH_BASE_URL` 注入（生产=api.quanttide.com 网关）
+
 ## [0.1.0-beta.5] - 2026-08-09
 
 ### Fixed

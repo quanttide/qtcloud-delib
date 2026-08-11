@@ -55,7 +55,9 @@ jobs:
         working-directory: src/studio
         run: |
           flutter pub get
-          flutter build web --release
+          flutter build web --release \
+            --dart-define=QTCLOUD_DELIB_API_BASE_URL=${{ vars.QTCLOUD_DELIB_API_BASE_URL }} \
+            --dart-define=QTCLOUD_AUTH_BASE_URL=${{ vars.QTCLOUD_AUTH_BASE_URL }}
 
       - name: Setup ossutil
         uses: manyuanrong/setup-ossutil@v3.0

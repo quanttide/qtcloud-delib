@@ -29,6 +29,24 @@ class _FakeResolutionStore implements ResolutionStore {
     }
     return List.of(items);
   }
+
+  @override
+  Future<Resolution> createResolution({
+    required String name,
+    required String title,
+    String content = '',
+    String category = '',
+  }) async {
+    final r = Resolution(
+      id: 'fake-${items.length + 1}',
+      name: name,
+      title: title,
+      content: content,
+      category: category,
+    );
+    items.add(r);
+    return r;
+  }
 }
 
 const Resolution sample = Resolution(
@@ -124,10 +142,10 @@ void main() {
     expect(find.textContaining('记名表决', findRichText: true), findsWidgets);
   });
 
-  testWidgets('决议列表无新建入口（本地标本只读）', (WidgetTester tester) async {
+  testWidgets('决议列表有新建入口（登录后可创建）', (WidgetTester tester) async {
     await tester.pumpWidget(_screenWith(_FakeResolutionStore(items: [sample])));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.add), findsNothing);
+    expect(find.byIcon(Icons.add), findsOneWidget);
   });
 }
