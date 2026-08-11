@@ -1,7 +1,7 @@
 # 部署 studio：推送 studio/* tag（如 studio/v0.1.0-alpha.1，由 qtcloud-devops release publish 创建）时，
 # 构建 Flutter Web 产物上传到 OSS 静态网站桶，并刷新 CDN 缓存。
 #
-# 架构（对齐 qtdata 部署模式，运维手册见 quanttide-platform/docs/site-ops-handbook.md）：
+# 架构（对齐 qtdata 部署模式，运维手册见 quanttide-platform/docs/dev-guide/site-ops-handbook.md）：
 #   studio/* tag → Actions（flutter build web + ossutil cp）→ OSS 桶（静态网站模式）
 #   → 阿里云 CDN（delib.cloud.quanttide.com，泛域名证书 *.quanttide.com）→ 用户浏览器
 #
