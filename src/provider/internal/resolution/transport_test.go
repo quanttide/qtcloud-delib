@@ -16,7 +16,9 @@ func newTestMux(t *testing.T) *http.ServeMux {
 	db := setupDB(t)
 	svc := resolution.NewService(db, resolutiongorm.NewResolutionRepo())
 	mux := http.NewServeMux()
-	resolution.NewHandler(svc).Register(mux)
+	resolution.NewHandler(svc).Register(mux, func(h http.Handler) http.Handler {
+		return h // 测试透传（鉴权中间件单独测试）
+	})
 	return mux
 }
 

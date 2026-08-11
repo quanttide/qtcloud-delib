@@ -18,11 +18,11 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-// Register 注册决议路由。
-func (h *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /resolutions", h.handleList)
-	mux.HandleFunc("POST /resolutions", h.handleCreate)
-	mux.HandleFunc("DELETE /resolutions/{name}", h.handleDelete)
+// Register 注册决议路由（wrap 为 JWT 鉴权中间件，全部端点要求登录）。
+func (h *Handler) Register(mux *http.ServeMux, wrap func(http.Handler) http.Handler) {
+	mux.Handle("GET /resolutions", wrap(http.HandlerFunc(h.handleList)))
+	mux.Handle("POST /resolutions", wrap(http.HandlerFunc(h.handleCreate)))
+	mux.Handle("DELETE /resolutions/{name}", wrap(http.HandlerFunc(h.handleDelete)))
 }
 
 // handleList 决议清单：GET /resolutions

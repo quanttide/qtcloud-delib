@@ -3,6 +3,7 @@ module github.com/quanttide/qtcloud-delib-provider
 go 1.26
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/quanttide/quanttide-delib-toolkit/packages/go v0.0.0-00010101000000-000000000000
 	gorm.io/driver/postgres v1.6.2

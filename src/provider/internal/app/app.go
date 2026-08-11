@@ -3,6 +3,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"github.com/quanttide/qtcloud-delib-provider/internal/httpserver"
 	"github.com/quanttide/qtcloud-delib-provider/internal/resolution"
 	resolutiongorm "github.com/quanttide/qtcloud-delib-provider/internal/resolution/gorm"
 )
@@ -57,10 +59,22 @@ func OpenDB() (*gorm.DB, error) {
 }
 
 // BuildMux 组装全部模块并返回路由。
+// 全部 resolution 端点要求 Bearer JWT（RS256 公钥验签，与 qtcloud-auth 共享密钥对）。
+// JWT_PUBLIC_KEY 为 base64(PEM) 公钥；未配置时启动失败（fail-closed）。
 func BuildMux(db *gorm.DB) (*http.ServeMux, error) {
 	svc := resolution.NewService(db, resolutiongorm.NewResolutionRepo())
 
+	encoded := os.Getenv("JWT_PUBLIC_KEY")
+	if encoded == "" {
+		return nil, fmt.Errorf("app: JWT_PUBLIC_KEY 未配置（base64(PEM) 公钥，与 qtcloud-auth 配对）")
+	}
+	_, verifyKey, err := httpserver.PublicKeyFromEnv(encoded)
+	if err != nil {
+		return nil, err
+	}
+
 	mux := http.NewServeMux()
-	resolution.NewHandler(svc).Register(mux)
+	auth := httpserver.RequireJWT(verifyKey)
+	resolution.NewHandler(svc).Register(mux, auth)
 	return mux, nil
 }
