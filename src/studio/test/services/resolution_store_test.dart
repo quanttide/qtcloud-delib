@@ -16,10 +16,15 @@ void main() {
 
     final List<Resolution> resolutions = await store.fetchResolutions();
 
-    expect(resolutions, hasLength(3));
+    expect(resolutions, hasLength(4));
     expect(
       resolutions.map((r) => r.name).toList(),
-      containsAll(['data-contract', 'institutionalization', 'recuirtment']),
+      containsAll([
+        'data-contract',
+        'institutionalization',
+        'object-storage-visualization',
+        'recuirtment',
+      ]),
     );
     for (final Resolution r in resolutions) {
       expect(r.id, isNotEmpty);

@@ -9,8 +9,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# 域仓库根：qtcloud-delib/src/studio/scripts → 上溯 4 级
-DOMAIN_ROOT="$(cd "${SCRIPT_DIR}/../../../../" && pwd)"
+# 域仓库根：qtcloud-delib/src/studio/scripts → 上溯 5 级（scripts→studio→src→qtcloud-delib→apps→域仓库根）
+DOMAIN_ROOT="$(cd "${SCRIPT_DIR}/../../../../../" && pwd)"
 SRC="${DOMAIN_ROOT}/data/profile/resolutions"
 DEST="${SCRIPT_DIR}/../assets/data"
 
