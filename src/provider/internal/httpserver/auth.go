@@ -5,8 +5,9 @@ package httpserver
 // 未携带有效 Bearer JWT 一律 401（fail-closed）。
 
 import (
-	"encoding/base64"
+	"context"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"net/http"
@@ -52,7 +53,25 @@ func RequireJWT(verifyKey interface{}) func(http.Handler) http.Handler {
 				WriteError(w, http.StatusUnauthorized, "invalid or expired token")
 				return
 			}
+			// 注入用户 ID（JWT sub）到 context，供 handler 识别动议人/表决人
+			claims, _ := token.Claims.(jwt.MapClaims)
+			if sub, ok := claims["sub"].(string); ok && sub != "" {
+				r = r.WithContext(context.WithValue(r.Context(), UserIDKey, sub))
+			}
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// UserIDKey 请求上下文中的用户 ID 键（JWT sub）。
+type ctxKey string
+
+const UserIDKey ctxKey = "user_id"
+
+// UserID 从请求上下文取当前用户 ID（中间件注入；无则空串）。
+func UserID(r *http.Request) string {
+	if v, ok := r.Context().Value(UserIDKey).(string); ok {
+		return v
+	}
+	return ""
 }

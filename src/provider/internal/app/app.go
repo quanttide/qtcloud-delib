@@ -14,6 +14,8 @@ import (
 	"github.com/quanttide/qtcloud-delib-provider/internal/httpserver"
 	"github.com/quanttide/qtcloud-delib-provider/internal/resolution"
 	resolutiongorm "github.com/quanttide/qtcloud-delib-provider/internal/resolution/gorm"
+	"github.com/quanttide/qtcloud-delib-provider/internal/topic"
+	topicgorm "github.com/quanttide/qtcloud-delib-provider/internal/topic/gorm"
 )
 
 // Open 打开数据库并迁移全部模型（driver: sqlite/postgres，dsn 对应驱动格式）。
@@ -31,7 +33,7 @@ func Open(driver, dsn string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := db.AutoMigrate(&resolution.Resolution{}); err != nil {
+	if err := db.AutoMigrate(&resolution.Resolution{}, &topic.Topic{}); err != nil {
 		return nil, err
 	}
 	if driver != "postgres" {
@@ -76,5 +78,7 @@ func BuildMux(db *gorm.DB) (*http.ServeMux, error) {
 	mux := http.NewServeMux()
 	auth := httpserver.RequireJWT(verifyKey)
 	resolution.NewHandler(svc).Register(mux, auth)
+	topicSvc := topic.NewService(db, topicgorm.NewTopicRepo())
+	topic.NewHandler(topicSvc).Register(mux, auth)
 	return mux, nil
 }
