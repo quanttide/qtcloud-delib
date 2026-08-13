@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/resolution_list.dart';
 import 'screens/topic_list.dart';
+import 'services/topic_api.dart';
 import 'services/api_resolution_store.dart';
 import 'services/auth_service.dart';
 import 'services/resolution_store.dart';
@@ -39,6 +40,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   final AuthService _auth = AuthService();
   ResolutionStore? _store; // 非空 = 已登录（ApiResolutionStore）
+  String? _token;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _AuthGateState extends State<AuthGate> {
     final token = await _auth.storedToken();
     if (token != null && token.isNotEmpty) {
       setState(() {
+        _token = token;
         _store = ApiResolutionStore(
           baseUrl: _apiBaseUrl(),
           token: token,
@@ -75,6 +78,7 @@ class _AuthGateState extends State<AuthGate> {
         onSuccess: () async {
           final token = await _auth.storedToken();
           setState(() {
+            _token = token;
             _store = ApiResolutionStore(
               baseUrl: _apiBaseUrl(),
               token: token ?? '',
@@ -83,7 +87,7 @@ class _AuthGateState extends State<AuthGate> {
         },
       );
     }
-    return MainShell(store: _store);
+    return MainShell(store: _store, token: _token);
   }
 }
 
@@ -93,10 +97,13 @@ class _AuthGateState extends State<AuthGate> {
 // 可用 LayoutBuilder 在窄屏降级为 Drawer。
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key, this.store});
+  const MainShell({super.key, this.store, this.token});
 
   /// 决议数据源（测试可注入替身，默认本地标本）
   final ResolutionStore? store;
+
+  /// 登录 JWT（议题/决议 API 用）
+  final String? token;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -106,9 +113,17 @@ class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages = [
-    const TopicScreen(),
+    TopicScreen(api: _topicApi()),
     ResolutionScreen(store: widget.store),
   ];
+
+  TopicApi? _topicApi() {
+    final token = widget.token;
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+    return TopicApi(baseUrl: _AuthGateState._apiBaseUrl(), token: token);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -70,7 +70,7 @@ void main() {
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.text('议题'), findsOneWidget);
     expect(find.text('决议'), findsOneWidget);
-    expect(find.text('议题功能建设中'), findsOneWidget);
+    expect(find.text('议题管理'), findsOneWidget);
     expect(find.byType(ResolutionScreen), findsNothing);
   });
 
