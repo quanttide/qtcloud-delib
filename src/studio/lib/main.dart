@@ -1,6 +1,7 @@
 // 量潮议事云入口
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import 'screens/login_screen.dart';
 import 'screens/resolution_list.dart';
@@ -51,13 +52,31 @@ class _AuthGateState extends State<AuthGate> {
   Future<void> _restoreSession() async {
     final token = await _auth.storedToken();
     if (token != null && token.isNotEmpty) {
-      setState(() {
-        _token = token;
-        _store = ApiResolutionStore(
-          baseUrl: _apiBaseUrl(),
-          token: token,
-        );
-      });
+      // 验证 token 有效性（旧 token 过期会导致 401——失效则清除回登录页）
+      if (await _validateToken(token)) {
+        setState(() {
+          _token = token;
+          _store = ApiResolutionStore(
+            baseUrl: _apiBaseUrl(),
+            token: token,
+          );
+        });
+      } else {
+        await _auth.logout();
+      }
+    }
+  }
+
+  /// 调 userinfo 验证 token；401 视为失效。
+  Future<bool> _validateToken(String token) async {
+    try {
+      final resp = await http.get(
+        Uri.parse('${_AuthGateState._apiBaseUrl()}/userinfo'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 10));
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 
