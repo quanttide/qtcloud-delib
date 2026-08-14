@@ -67,17 +67,26 @@ class _AuthGateState extends State<AuthGate> {
     }
   }
 
-  /// 调 userinfo 验证 token；401 视为失效。
+  /// 调 auth 的 userinfo 验证 token；非 200 视为失效（userinfo 在 auth 路径下）。
   Future<bool> _validateToken(String token) async {
     try {
       final resp = await http.get(
-        Uri.parse('${_AuthGateState._apiBaseUrl()}/userinfo'),
+        Uri.parse('${_authBaseUrl()}/userinfo'),
         headers: {'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 10));
       return resp.statusCode == 200;
     } catch (_) {
       return false;
     }
+  }
+
+  /// 认证服务地址（QTCLOUD_AUTH_BASE_URL，生产 = api.quanttide.com/qtcloud-auth）。
+  static String _authBaseUrl() {
+    const String fromEnv = String.fromEnvironment('QTCLOUD_AUTH_BASE_URL');
+    if (fromEnv.isNotEmpty) {
+      return fromEnv;
+    }
+    return 'http://localhost:8080';
   }
 
   /// 议事云 API 地址：与登录地址同网关（QTCLOUD_DELIB_API_BASE_URL 注入生产网关）。
