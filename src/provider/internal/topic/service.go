@@ -3,6 +3,7 @@ package topic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -141,6 +142,10 @@ func (s *Service) Close(ctx context.Context, id string) (*Topic, error) {
 	if t.Votes.For > t.Votes.Against {
 		t.Status = StatusResolved
 		t.ResolutionID = "res-" + strings.ReplaceAll(t.ID, "-", "")
+		// 归档决议到 resolutions 表（决议管理页可见；幂等）
+		if _, err := createResolution(s.db, t); err != nil {
+			return nil, fmt.Errorf("create resolution: %w", err)
+		}
 	} else {
 		t.Status = StatusRejected
 	}

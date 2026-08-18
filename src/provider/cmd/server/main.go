@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/quanttide/qtcloud-delib-provider/internal/app"
+	"github.com/quanttide/qtcloud-delib-provider/internal/topic"
 	topicseed "github.com/quanttide/qtcloud-delib-provider/internal/topic/seed"
 )
 
@@ -43,6 +44,14 @@ func run(ctx context.Context, addr string) error {
 			return fmt.Errorf("seed ledger: %w", err)
 		}
 		log.Printf("ledger seed done: imported %d, updated %d", imported, updated)
+	}
+	// 启动补建：resolved 议题归档决议到 resolutions 表（幂等，重复部署无害）
+	created, skipped, err := topic.EnsureResolutionsForResolved(db)
+	if err != nil {
+		return fmt.Errorf("ensure resolutions: %w", err)
+	}
+	if created+skipped > 0 {
+		log.Printf("resolution ensure done: created %d, skipped %d", created, skipped)
 	}
 	mux, err := app.BuildMux(db)
 	if err != nil {
