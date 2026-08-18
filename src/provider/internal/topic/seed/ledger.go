@@ -55,13 +55,13 @@ func Import(db *gorm.DB) (imported, updated int, err error) {
 		name := fmt.Sprintf("%s-%s", slug, strings.ToLower(e.LedgerNo))
 		now := time.Now()
 		t := topic.Topic{
-			Name:     name,
-			Title:    e.Title,
-			Content:  e.Content,
-			Category: e.Category,
-			LedgerNo: e.LedgerNo,
-			Source:   e.Source,
-			Status:   topic.StatusProposed,
+			Name:      name,
+			Title:     e.Title,
+			Content:   e.Content,
+			Category:  e.Category,
+			LedgerNo:  e.LedgerNo,
+			Source:    e.Source,
+			Status:    topic.StatusProposed,
 			CreatedAt: now,
 			UpdatedAt: now,
 		}
