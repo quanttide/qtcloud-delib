@@ -20,6 +20,11 @@ class _TopicScreenState extends State<TopicScreen> {
     token: _token(),
   );
   late Future<List<Topic>> _future = _api.fetchTopics();
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _statusFilter = _statusAll;
+  String? _categoryFilter;
+
+  static const String _statusAll = '全部状态';
 
   static String _baseUrl() {
     const String fromEnv = String.fromEnvironment('QTCLOUD_DELIB_API_BASE_URL');
@@ -120,6 +125,28 @@ class _TopicScreenState extends State<TopicScreen> {
     }
   }
 
+  /// 本地过滤（245 条全量已拉取）：关键词 + 状态 + 类别。
+  List<Topic> _applyFilters(List<Topic> topics) {
+    final q = _searchCtrl.text.trim().toLowerCase();
+    return topics.where((t) {
+      if (_statusFilter != _statusAll && _statusLabel(t.status) != _statusFilter) {
+        return false;
+      }
+      if (_categoryFilter != null && t.category != _categoryFilter) {
+        return false;
+      }
+      if (q.isNotEmpty) {
+        final haystack =
+            '${t.title} ${t.content} ${t.source ?? ''} ${t.ledgerNo ?? ''} ${t.category} ${_statusLabel(t.status)}'
+                .toLowerCase();
+        if (!haystack.contains(q)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,27 +181,132 @@ class _TopicScreenState extends State<TopicScreen> {
           if (topics.isEmpty) {
             return const Center(child: Text('暂无议题，点击 + 新建动议'));
           }
-          return RefreshIndicator(
-            onRefresh: () async {
-              final f = _api.fetchTopics();
-              setState(() => _future = f);
-              await f;
-            },
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: topics.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) => _TopicTile(
-                topic: topics[index],
-                onSecond: () => _action(topics[index], '附议', () => _api.second(topics[index].id)),
-                onDebate: () => _action(topics[index], '辩论', () => _api.debate(topics[index].id)),
-                onVote: () => _showVoteDialog(topics[index]),
-                onClose: () => _action(topics[index], '归档', () => _api.close(topics[index].id)),
+          final filtered = _applyFilters(topics);
+          final categories = topics.map((t) => t.category).where((c) => c.isNotEmpty).toSet().toList()..sort();
+          return Column(
+            children: [
+              _FilterBar(
+                searchCtrl: _searchCtrl,
+                statusFilter: _statusFilter,
+                categoryFilter: _categoryFilter,
+                categories: categories,
+                statusOptions: _statusOptions,
+                onSearchChanged: (_) => setState(() {}),
+                onStatusChanged: (v) => setState(() => _statusFilter = v),
+                onCategoryChanged: (v) => setState(() => _categoryFilter = v),
               ),
-            ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    final f = _api.fetchTopics();
+                    setState(() => _future = f);
+                    await f;
+                  },
+                  child: filtered.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            Padding(
+                              padding: EdgeInsets.all(32),
+                              child: Center(child: Text('没有匹配的议题')),
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, index) => _TopicTile(
+                            topic: filtered[index],
+                            onSecond: () => _action(filtered[index], '附议', () => _api.second(filtered[index].id)),
+                            onDebate: () => _action(filtered[index], '辩论', () => _api.debate(filtered[index].id)),
+                            onVote: () => _showVoteDialog(filtered[index]),
+                            onClose: () => _action(filtered[index], '归档', () => _api.close(filtered[index].id)),
+                          ),
+                        ),
+                ),
+              ),
+            ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// 状态中文标签（列表 chip 与过滤共用）。
+String _statusLabel(String status) => switch (status) {
+  'proposed' => '动议',
+  'seconded' => '附议',
+  'debated' => '辩论',
+  'voted' => '表决',
+  'resolved' => '已决议',
+  'rejected' => '已否决',
+  _ => status,
+};
+
+const List<String> _statusOptions = ['全部状态', '动议', '附议', '辩论', '表决', '已决议', '已否决'];
+
+/// 过滤栏：关键词搜索 + 状态 + 类别。
+class _FilterBar extends StatelessWidget {
+  const _FilterBar({
+    required this.searchCtrl,
+    required this.statusFilter,
+    required this.categoryFilter,
+    required this.categories,
+    required this.statusOptions,
+    required this.onSearchChanged,
+    required this.onStatusChanged,
+    required this.onCategoryChanged,
+  });
+
+  final TextEditingController searchCtrl;
+  final String statusFilter;
+  final String? categoryFilter;
+  final List<String> categories;
+  final List<String> statusOptions;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<String> onStatusChanged;
+  final ValueChanged<String?> onCategoryChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          SizedBox(
+            width: 220,
+            child: TextField(
+              controller: searchCtrl,
+              onChanged: onSearchChanged,
+              decoration: const InputDecoration(
+                hintText: '搜索标题 / 内容 / 来源 / 编号',
+                isDense: true,
+                prefixIcon: Icon(Icons.search, size: 18),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          DropdownButton<String>(
+            value: statusFilter,
+            onChanged: (v) => onStatusChanged(v ?? statusFilter),
+            items: [for (final s in statusOptions) DropdownMenuItem(value: s, child: Text(s))],
+          ),
+          DropdownButton<String?>(
+            value: categoryFilter,
+            hint: const Text('全部分类'),
+            onChanged: onCategoryChanged,
+            items: [
+              const DropdownMenuItem<String?>(value: null, child: Text('全部分类')),
+              for (final c in categories) DropdownMenuItem<String?>(value: c, child: Text(c)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -195,16 +327,6 @@ class _TopicTile extends StatelessWidget {
   final VoidCallback onVote;
   final VoidCallback onClose;
 
-  String get _statusLabel => switch (topic.status) {
-    'proposed' => '动议',
-    'seconded' => '附议',
-    'debated' => '辩论',
-    'voted' => '表决',
-    'resolved' => '已决议',
-    'rejected' => '已否决',
-    _ => topic.status,
-  };
-
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -219,7 +341,7 @@ class _TopicTile extends StatelessWidget {
           spacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Chip(label: Text(_statusLabel), visualDensity: VisualDensity.compact),
+            Chip(label: Text(_statusLabel(topic.status)), visualDensity: VisualDensity.compact),
             if (topic.category.isNotEmpty)
               Text(topic.category, style: Theme.of(context).textTheme.bodySmall),
             if ((topic.source ?? '').isNotEmpty)
