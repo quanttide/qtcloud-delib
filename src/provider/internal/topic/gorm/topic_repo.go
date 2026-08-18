@@ -71,8 +71,12 @@ func (r *TopicRepo) Update(db *gorm.DB, t *topic.Topic) error {
 }
 
 func hydrate(row topic.Topic) topic.Topic {
-	json.Unmarshal([]byte(row.SeconderIDsJSON), &row.SeconderIDs)
-	json.Unmarshal([]byte(row.VotesJSON), &row.Votes)
+	if err := json.Unmarshal([]byte(row.SeconderIDsJSON), &row.SeconderIDs); err != nil {
+		row.SeconderIDs = nil
+	}
+	if err := json.Unmarshal([]byte(row.VotesJSON), &row.Votes); err != nil {
+		row.Votes = topic.VoteResult{}
+	}
 	if row.VotesJSON == "" {
 		row.Votes = topic.VoteResult{}
 	}

@@ -86,10 +86,10 @@ func TestTopicRejected(t *testing.T) {
 	ctx := context.Background()
 
 	topic, _ := svc.Create(ctx, &Topic{Title: "否决案", ProposerID: "u-1"})
-	svc.Second(ctx, topic.ID, "u-2")
-	svc.Debate(ctx, topic.ID)
-	svc.Vote(ctx, topic.ID, "u-3", "against")
-	svc.Vote(ctx, topic.ID, "u-4", "against")
+	_, _ = svc.Second(ctx, topic.ID, "u-2")
+	_, _ = svc.Debate(ctx, topic.ID)
+	_, _ = svc.Vote(ctx, topic.ID, "u-3", "against")
+	_, _ = svc.Vote(ctx, topic.ID, "u-4", "against")
 
 	topic, err := svc.Close(ctx, topic.ID)
 	if err != nil {
@@ -119,8 +119,8 @@ func TestTopicBadTransitions(t *testing.T) {
 		t.Fatalf("close without vote: %v, want ErrBadState", err)
 	}
 	// 非法表决选项
-	svc.Second(ctx, topic.ID, "u-2")
-	svc.Debate(ctx, topic.ID)
+	_, _ = svc.Second(ctx, topic.ID, "u-2")
+	_, _ = svc.Debate(ctx, topic.ID)
 	if _, err := svc.Vote(ctx, topic.ID, "u-3", "maybe"); err != ErrInvalidInput {
 		t.Fatalf("invalid choice: %v, want ErrInvalidInput", err)
 	}
