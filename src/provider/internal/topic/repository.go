@@ -6,6 +6,7 @@ import "gorm.io/gorm"
 type Repository interface {
 	List(db *gorm.DB) ([]Topic, error)
 	Get(db *gorm.DB, id string) (*Topic, error)
+	GetByName(db *gorm.DB, name string) (*Topic, error)
 	Create(db *gorm.DB, t *Topic) error
 	Update(db *gorm.DB, t *Topic) error
 }

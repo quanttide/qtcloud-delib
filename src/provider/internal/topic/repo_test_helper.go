@@ -27,6 +27,15 @@ func (m *memRepo) Get(_ *gorm.DB, id string) (*Topic, error) {
 	return v, nil
 }
 
+func (m *memRepo) GetByName(_ *gorm.DB, name string) (*Topic, error) {
+	for _, v := range m.data {
+		if v.Name == name {
+			return v, nil
+		}
+	}
+	return nil, gorm.ErrRecordNotFound
+}
+
 func (m *memRepo) Create(_ *gorm.DB, t *Topic) error {
 	m.data[t.ID] = t
 	return nil

@@ -53,9 +53,10 @@ resource "alicloud_fcv3_function" "this" {
   # 注意：密码会以明文落入 tfstate。规划经 FC 配置中心/密钥管理注入（见 README 待办），
   # 当前平台密钥管理未就绪，先沿用环境变量方式（与 qtcloud-pay 一致）
   environment_variables = {
-    DB_DRIVER    = "postgres"
-    DATABASE_URL = "postgres://${alicloud_db_account.this.account_name}:${var.db_password}@${data.terraform_remote_state.platform.outputs.rds_connection_string}:${data.terraform_remote_state.platform.outputs.rds_port}/${alicloud_db_database.this.data_base_name}?sslmode=disable"
+    DB_DRIVER      = "postgres"
+    DATABASE_URL   = "postgres://${alicloud_db_account.this.account_name}:${var.db_password}@${data.terraform_remote_state.platform.outputs.rds_connection_string}:${data.terraform_remote_state.platform.outputs.rds_port}/${alicloud_db_database.this.data_base_name}?sslmode=disable"
     JWT_PUBLIC_KEY = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFuYlk5MWNDdzVtd05KMFZINnErZgpVdjFocEIyZzUwczZHVGJyM1pkYTdES3dkdFhrcUlTUCt2bll2SGJwYU5kUFdvUVR2UjZXOHVYQVZ4VjhuMEVPCnhTMUt3TGVTN2xKRHZ6MitVR3VDYXRVbC81OCtGUnFPS2tITFFGcWtzM0xaUW1YMlg0dUFsMDM0djAxMVBrWEgKVFlxNHlVMTRqYnhWdnpzbDhjaGpKemRNYlgyRGVnN3U4VDBNdm5naFhmWWMvMnJkUTV5SjBMUUlwb3o1VjlEawpnMHNwcWtMMnRxZ2FwNHFBRU93YW5QeGxXS3JSTkhZQ3VSNUVZNFNGVS9ScjgwRkVkWmFJMVUvTzAvVURVdmYvClJ5VGFjeGpQUTdackN5Z25aWTk3Z0drbUR6eEFOWjMzT0w1KzhhRGw4V1Bha0Rza0xLYkNjVytKMEZkeUU1NjAKQlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg=="
+    SEED_LEDGER    = "1"
   }
 
   tags = {

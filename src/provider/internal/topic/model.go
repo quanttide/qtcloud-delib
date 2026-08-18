@@ -31,6 +31,8 @@ type Topic struct {
 	Title        string      `gorm:"size:255" json:"title"`
 	Content      string      `gorm:"type:text" json:"content"`
 	Category     string      `gorm:"size:32" json:"category"`
+	LedgerNo     string      `gorm:"size:16;index" json:"ledgerNo,omitempty"` // 台账编号（M-XX，议事档案导入）
+	Source       string      `gorm:"size:64" json:"source,omitempty"`         // 来源（第N周-提案N）
 	Status       string      `gorm:"size:16" json:"status"`
 	ProposerID   string      `gorm:"size:64" json:"proposerId"`   // 动议人（账号用户 ID）
 	SeconderIDs  []string    `gorm:"-" json:"seconderIds"`        // 附议人（JSON 列存储）

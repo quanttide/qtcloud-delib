@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/quanttide/qtcloud-delib-provider/internal/app"
+	topicseed "github.com/quanttide/qtcloud-delib-provider/internal/topic/seed"
 )
 
 func main() {
@@ -33,6 +35,14 @@ func run(ctx context.Context, addr string) error {
 	db, err := app.OpenDB()
 	if err != nil {
 		return err
+	}
+	// SEED_LEDGER=1：启动时幂等导入议事档案动议（FC 容器无法 exec，用 env 触发）
+	if os.Getenv("SEED_LEDGER") == "1" {
+		imported, updated, err := topicseed.Import(db)
+		if err != nil {
+			return fmt.Errorf("seed ledger: %w", err)
+		}
+		log.Printf("ledger seed done: imported %d, updated %d", imported, updated)
 	}
 	mux, err := app.BuildMux(db)
 	if err != nil {

@@ -11,6 +11,8 @@ class Topic {
     required this.proposerId,
     required this.seconderIds,
     required this.votes,
+    this.ledgerNo,
+    this.source,
     this.resolutionId,
   });
 
@@ -23,6 +25,8 @@ class Topic {
   final String proposerId;
   final List<String> seconderIds;
   final VoteResult votes;
+  final String? ledgerNo; // 台账编号（M-XX，议事档案导入）
+  final String? source; // 来源（第N周-提案N）
   final String? resolutionId;
 
   bool get isActive =>
@@ -38,6 +42,8 @@ class Topic {
     proposerId: json['proposerId'] as String? ?? '',
     seconderIds: (json['seconderIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
     votes: VoteResult.fromJson(json['votes'] as Map<String, dynamic>? ?? {}),
+    ledgerNo: json['ledgerNo'] as String?,
+    source: json['source'] as String?,
     resolutionId: json['resolutionId'] as String?,
   );
 }

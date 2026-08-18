@@ -36,16 +36,34 @@ func (r *TopicRepo) Get(db *gorm.DB, id string) (*topic.Topic, error) {
 	return &t, nil
 }
 
+func (r *TopicRepo) GetByName(db *gorm.DB, name string) (*topic.Topic, error) {
+	var row topic.Topic
+	if err := db.Model(&topic.Topic{}).Where("name = ?", name).First(&row).Error; err != nil {
+		return nil, err
+	}
+	t := hydrate(row)
+	return &t, nil
+}
+
 func (r *TopicRepo) Create(db *gorm.DB, t *topic.Topic) error {
 	row := dehydrate(*t)
 	return db.Create(&row).Error
+}
+
+// UpdateByName 按 name 更新内容字段（seed 幂等用；不动 status/附议/票数）。
+func (r *TopicRepo) UpdateByName(db *gorm.DB, name string, t *topic.Topic) error {
+	return db.Model(&topic.Topic{}).Where("name = ?", name).Updates(map[string]any{
+		"title": t.Title, "content": t.Content, "category": t.Category,
+		"ledger_no": t.LedgerNo, "source": t.Source, "updated_at": t.UpdatedAt,
+	}).Error
 }
 
 func (r *TopicRepo) Update(db *gorm.DB, t *topic.Topic) error {
 	row := dehydrate(*t)
 	return db.Model(&topic.Topic{}).Where("id = ?", t.ID).Updates(map[string]any{
 		"name": row.Name, "title": row.Title, "content": row.Content,
-		"category": row.Category, "status": row.Status, "proposer_id": row.ProposerID,
+		"category": row.Category, "ledger_no": row.LedgerNo, "source": row.Source,
+		"status": row.Status, "proposer_id": row.ProposerID,
 		"seconder_ids_json": row.SeconderIDsJSON, "votes_json": row.VotesJSON,
 		"resolution_id": row.ResolutionID, "resolved_at": row.ResolvedAt,
 		"updated_at": row.UpdatedAt,

@@ -222,6 +222,8 @@ class _TopicTile extends StatelessWidget {
             Chip(label: Text(_statusLabel), visualDensity: VisualDensity.compact),
             if (topic.category.isNotEmpty)
               Text(topic.category, style: Theme.of(context).textTheme.bodySmall),
+            if ((topic.source ?? '').isNotEmpty)
+              Text(topic.source ?? '', style: Theme.of(context).textTheme.bodySmall),
             if (topic.votes.for_ + topic.votes.against + topic.votes.abstain > 0)
               Text(
                 '赞成 ${topic.votes.for_} / 反对 ${topic.votes.against} / 弃权 ${topic.votes.abstain}',
