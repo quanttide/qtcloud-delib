@@ -33,7 +33,7 @@ flowchart TD
 
 - `transport`（HTTP handler）→ `service`（业务规则）→ `repository`（存储接口）→ `gorm`（实现）
 - 方法以 `*gorm.DB` 为首参，事务由调用方（service）编排
-- `seed` 引用工具库标本模型（`quanttide-delib-toolkit`）解析云端 JSON，再经 repository 幂等写入
+- `seed` 引用标准库标本模型（`quanttide-delib-toolkit`）解析云端 JSON，再经 repository 幂等写入
 
 ## 运行
 

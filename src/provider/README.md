@@ -47,7 +47,7 @@ make test && make vet
 github.com/quanttide/qtcloud-delib-provider
 ```
 
-工具库经 go.mod `replace` 引用 `quanttide-delib-toolkit`（标本模型，seed 解析用）。
+标准库经 go.mod `replace` 引用 `quanttide-delib-toolkit`（标本模型，seed 解析用）。
 
 ## 部署
 

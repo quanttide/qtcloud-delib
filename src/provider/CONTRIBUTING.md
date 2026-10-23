@@ -36,7 +36,7 @@ repository 方法一律以 `*gorm.DB` 为首参，事务由 service（编排方�
 
 ### 5. 模型职责不混层
 
-`internal/resolution/model.go` 是运行时模型（含存储 tag）；工具库 `quanttide-delib-toolkit/packages/go/pkg` 是标本/契约模型。两者字段相同但职责不同：工具库模型不引 gorm，运行时模型不承诺跨仓库稳定。
+`internal/resolution/model.go` 是运行时模型（含存储 tag）；标准库 `quanttide-delib-toolkit/packages/go/pkg` 是标本/契约模型。两者字段相同但职责不同：标准库模型不引 gorm，运行时模型不承诺跨仓库稳定。
 
 ### 6. 种子数据云端拉取
 
